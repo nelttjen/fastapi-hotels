@@ -1,16 +1,13 @@
-import dataclasses
 from typing import Literal
 
-import pydantic.main
-from fastapi import FastAPI, Depends
-from pydantic import ValidationError, BaseModel, field_validator, validator
-from datetime import datetime
+from fastapi import FastAPI
+from src.bookings.routers import bookings_router
+from migrations import __models__  # noqa
 
 app = FastAPI()
 
-
-@app.get('/test')
-async def test(
-        value: Literal['val1', 'val2', 'val3'],
-):
-    return {'value': value}
+app.include_router(
+    bookings_router,
+    prefix='/api/v1',
+    tags=['Bookings'],
+)

@@ -6,12 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base, DeclarativeMeta
 from sqlalchemy import MetaData
 
-from src.config import config
-
-DATABASE_URL = config('DB_URL')
+from src.config import db_settings, config
 
 
-engine = create_async_engine(DATABASE_URL)
+engine = create_async_engine(db_settings.DATABASE_URL)
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)  # noqa
 debugger = logging.getLogger('debugger')
 

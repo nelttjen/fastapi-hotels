@@ -5,25 +5,35 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from dotenv import load_dotenv
 
-info = logging.getLogger('all')
-
 BASE_DIR = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DEBUG = True
-ENABLE_QUERY_DEBUGGING = True
-
 load_dotenv(BASE_DIR / '.env')
 
+
+class DatabaseSettings(BaseSettings):
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
+    POSTGRES_DB: str
+
+    @property
+    def DATABASE_URL(self) -> str:  # noqa
+        return (f'postgresql+asyncpg://'
+                f'{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@'
+                f'{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/'
+                f'{self.POSTGRES_DB}')
+
+    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
+
+
+db_settings = DatabaseSettings()
+
+DEBUG = True
+ENABLE_QUERY_DEBUGGING = True
 SECRET_KEY = os.getenv('SECRET_KEY')
-
-DB_USER = os.getenv('POSTGRES_USER')
-DB_PASS = os.getenv('POSTGRES_PASSWORD')
-DB_HOST = os.getenv('POSTGRES_HOST')
-DB_PORT = os.getenv('POSTGRES_PORT')
-DB_NAME = os.getenv('POSTGRES_DB')
-
-DB_URL = f'postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 
 CONNECTION_PROTOCOL = 'http'
 DOMAIN = '127.0.0.1:8000'
@@ -113,8 +123,9 @@ LOGGING = {
 }
 
 
-@lru_cache(maxsize=20, typed=True)
+@lru_cache(maxsize=50, typed=True)
 def config(value: Any, default: Any = None, module: str = 'src.config') -> Any:
+    info = logging.getLogger('all')
     try:
         module = importlib.import_module(module)
     except ModuleNotFoundError:
