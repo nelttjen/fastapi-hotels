@@ -2,8 +2,11 @@ import datetime
 from typing import Any
 
 from src.database import DatabaseModel
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, ForeignKey, JSON, Date, Computed
+
+
+from src.hotels.models import Room
 
 
 class Booking(DatabaseModel):
@@ -32,4 +35,8 @@ class Booking(DatabaseModel):
     )
     total_days: Mapped[int] = mapped_column(
         Integer, Computed('date_to - date_from'),
+    )
+
+    room: Room = relationship(
+        'Room', lazy='joined',
     )
