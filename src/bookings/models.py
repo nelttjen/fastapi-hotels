@@ -36,7 +36,3 @@ class Booking(DatabaseModel):
     total_days: Mapped[int] = mapped_column(
         Integer, Computed('date_to - date_from'),
     )
-
-    room: Room = relationship(
-        'Room', lazy='joined',
-    )
