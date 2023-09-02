@@ -2,6 +2,7 @@ from typing import Generic, TypeVar
 from dataclasses import dataclass
 from abc import ABC
 
+from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import DatabaseModel
@@ -57,6 +58,10 @@ class Transaction:
     async def __aenter__(self):
         if self.session is None:
             raise RuntimeError('Session is not initialized')
+        try:
+            await self.session.begin()
+        except InvalidRequestError:
+            """Transaction already has begun"""
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
