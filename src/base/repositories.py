@@ -1,10 +1,12 @@
-from typing import Generic, TypeVar
-from dataclasses import dataclass
+from typing import Generic, Optional, Type, TypeVar
+from dataclasses import dataclass, Field
 from abc import ABC
 
+from sqlalchemy import select
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.base.exceptions import HTTP_EXC, InternalServerError
 from src.database import DatabaseModel
 
 T = TypeVar('T', bound=DatabaseModel)
@@ -13,6 +15,18 @@ T = TypeVar('T', bound=DatabaseModel)
 @dataclass
 class BaseRepository(ABC, Generic[T]):
     session: AsyncSession
+    bind_model: Optional[Type[T]] = None
+
+    async def _get_or_exception(
+            self, model_id: int, exception: Type[HTTP_EXC], detail: Optional[str] = None,
+    ) -> bind_model:
+        if not self.bind_model:
+            raise InternalServerError('Model is not binded to repository')
+
+        model = await self.session.get(self.bind_model, model_id)
+        if model is None:
+            raise exception(detail=detail)
+        return model
 
     async def create(self, model: T, commit: bool = False) -> T:
         self.session.add(model)

@@ -1,5 +1,7 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 
+from src.base.exceptions import Forbidden
 from src.bookings.models import Booking
 from src.bookings.repositories import BookingRepository
 from src.base.repositories import Transaction
@@ -15,7 +17,7 @@ class BookingService:
     transaction: Transaction
 
     async def add_booking(
-            self, user: User, booking_data: BookingCreateData
+            self, user: User, booking_data: BookingCreateData,
     ) -> Booking:
         room_id = booking_data.room_id
         async with self.transaction:
@@ -30,4 +32,16 @@ class BookingService:
             )
             result = await self.repository.add_booking(booking)
         return result
-    
+
+    async def get_my_bookings(self, user_id: int) -> Sequence[Booking]:
+        return await self.repository.get_my_bookings(user_id)
+
+    async def delete_booking(
+            self, user_id: int, booking_id: int,
+    ) -> None:
+        async with self.transaction:
+            booking = await self.repository.get_booking_or_404(booking_id)
+            print(booking)
+            if booking.user_id != user_id:
+                raise Forbidden('You are not allowed to delete this booking')
+            await self.repository.delete(booking)
