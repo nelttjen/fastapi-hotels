@@ -1,11 +1,10 @@
 import datetime
-from typing import Any
+
+from sqlalchemy import Computed, Date, ForeignKey, Integer
+from sqlalchemy.ext.asyncio import AsyncAttrs
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database import DatabaseModel
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, ForeignKey, JSON, Date, Computed
-from sqlalchemy.ext.asyncio import AsyncAttrs
-
 from src.hotels.models import Room
 
 

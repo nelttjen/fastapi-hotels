@@ -1,15 +1,14 @@
 import asyncio
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
+
 from migrations.__models__ import *  # noqa
-from src.database import DatabaseModel
 from src.config import db_settings
-
-
-from alembic import context
+from src.database import DatabaseModel
 
 config = context.config
 
@@ -31,7 +30,6 @@ def run_migrations_offline() -> None:
 
     Calls to context.execute() here emit the given string to the
     script output.
-
     """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -53,10 +51,8 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    """In this scenario we need to create an Engine
-    and associate a connection with the context.
-
-    """
+    """In this scenario we need to create an Engine and associate a connection
+    with the context."""
 
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),

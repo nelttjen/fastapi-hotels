@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import Depends
 from jose import JWTError
 
-from src.auth.jwt import TokenType
 from src.auth.config import oauth2_scheme
+from src.auth.jwt import TokenType
 from src.auth.services import AuthService
 from src.base.exceptions import Unauthorized
 from src.users.dependencies import get_user_service

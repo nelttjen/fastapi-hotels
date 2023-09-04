@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block head %}
+	<title>Регистрация</title>
+    <script src="/static/js/auth/register.js"></script>
+    <style>
+    .register-form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .register-container {
+        max-width: 400px;
+        padding: 20px;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="register-form">
+    <div class="col-md-6 offset-md-3">
+        <h2 class="text-center">Регистрация</h2>
+        <div class="register-container">
+            <div class="mb-3">
+                <label for="username" class="form-label">Логин</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Почта</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Пароль</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">Повторите пароль</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+            </div>
+             <p>Уже есть аккаунт? <a href="/auth/login/">Войти</a></p>
+            <button id="register-button" class="btn btn-primary">Зарегистрироваться</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -2,9 +2,11 @@ import datetime
 from enum import Enum
 
 from jose import jwt
-from src.auth.config import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
+
+from src.auth.config import (ACCESS_TOKEN_EXPIRE_MINUTES, ACCESS_TOKEN_SECRET,
+                             REFRESH_TOKEN_EXPIRE_MINUTES,
+                             REFRESH_TOKEN_SECRET)
 from src.users.models import User
-from src.auth.config import ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET
 
 
 class TokenType(str, Enum):

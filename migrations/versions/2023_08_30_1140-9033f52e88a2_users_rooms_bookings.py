@@ -1,15 +1,13 @@
-"""users_rooms_bookings
+"""users_rooms_bookings.
 
 Revision ID: 9033f52e88a2
 Revises: 96316a80c893
 Create Date: 2023-08-30 11:40:46.497637
-
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = '9033f52e88a2'

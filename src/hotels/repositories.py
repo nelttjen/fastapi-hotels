@@ -1,15 +1,14 @@
-import logging
 import datetime
+import logging
 from typing import List, Optional, Type
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import RowMapping, and_, func, or_, select
 
-from src.database import engine
-from src.base.repositories import BaseRepository
 from src.base.exceptions import HTTP_EXC, NotFound
+from src.base.repositories import BaseRepository
+from src.bookings.models import Booking
 from src.bookings.repositories import BookingRepository
 from src.hotels.models import Hotel, Room
-from src.bookings.models import Booking
 
 debugger = logging.getLogger('debugger')
 
@@ -83,6 +82,7 @@ class HotelRepository(BaseRepository[Hotel | Room]):
         hotels = select(
             Hotel.id,
             Hotel.name,
+            Hotel.location,
             Hotel.image_id,
             Hotel.services,
             (rooms_by_hotels.c.rooms_count - func.coalesce(booked_by_hotels.c.rooms_booked, 0)).label('rooms_left'),
@@ -99,11 +99,15 @@ class HotelRepository(BaseRepository[Hotel | Room]):
         result = await self.session.execute(hotels)
         return result.mappings().all()
 
-    async def get_hotel_info(self, hotel_id: int) -> Hotel:
-        stmt = select(Hotel, func.coalesce(func.sum(Room.quantity), 0)).join(
+    async def get_hotel_info(self, hotel_id: int) -> RowMapping | None:
+        stmt = select(
+            Hotel.__table__.columns,  # noqa
+            (func.coalesce(func.sum(Room.quantity), 0)).label('rooms_count'),
+        ).join(
             Room, Room.hotel_id == Hotel.id, isouter=True,
-        ).where(Hotel.id == hotel_id)
-        return await self.session.scalar(stmt)
+        ).where(Hotel.id == hotel_id).group_by(Hotel.id)
+        res = await self.session.execute(stmt)
+        return res.mappings().first()
 
     async def get_hotel_rooms_available(
             self, hotel_id: int, date_from: datetime.date, date_to: datetime.date,
@@ -129,7 +133,7 @@ class HotelRepository(BaseRepository[Hotel | Room]):
         return result.mappings().all()
 
     @staticmethod
-    async def get_hotel_join(name: Optional[str] = None, hotel_ids: Optional[List[int]] = None,):
+    async def get_hotel_join(name: Optional[str] = None, hotel_ids: Optional[List[int]] = None):
         if not name and not hotel_ids:
             raise RuntimeError('name or hotel_id required for get_rooms_by_hotels')
         hotel_join_clause = None

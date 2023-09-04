@@ -1,8 +1,7 @@
-from typing import Generic, Optional, Type, TypeVar
-from dataclasses import dataclass, Field
 from abc import ABC
+from dataclasses import dataclass
+from typing import Generic, Optional, Type, TypeVar
 
-from sqlalchemy import select
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -75,7 +74,7 @@ class Transaction:
         try:
             await self.session.begin()
         except InvalidRequestError:
-            """Transaction already has begun"""
+            """Transaction already has begun."""
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

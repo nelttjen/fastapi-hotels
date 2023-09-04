@@ -1,11 +1,11 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, Depends, status
 
-from src.hotels.services import HotelService
 from src.base.schemas import DetailModel
 from src.hotels.dependencies import get_hotel_service
-from src.hotels.schemas import DateRangeModel, HotelWithRoomsLeft, HotelInfo
+from src.hotels.schemas import DateRangeModel, HotelInfo, HotelWithRoomsLeft
+from src.hotels.services import HotelService
 
 hotels_router = APIRouter(
     prefix='/hotels',

@@ -1,7 +1,7 @@
 import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 from src.base.exceptions import BadRequest
 from src.base.schemas import BaseORMModel
@@ -12,7 +12,7 @@ class DateRangeModel(BaseModel):
     date_to: Optional[datetime.date] = Field(default=None)
 
     def validate_date_to(self):
-        """due to empty values from fastapi"""
+        """due to empty values from fastapi."""
         if self.date_to <= self.date_from:
             raise BadRequest('Date to must be later than date from')
 
@@ -20,6 +20,7 @@ class DateRangeModel(BaseModel):
 class HotelInfo(BaseORMModel):
     id: int  # noqa
     name: str
+    location: str
     rooms_count: int
     image_id: int
     services: List[str]

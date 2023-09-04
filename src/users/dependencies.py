@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database import get_db_session
 from src.base.repositories import Transaction
+from src.database import get_db_session
 from src.users.repositories import UserRepository
 from src.users.services import UserService
 

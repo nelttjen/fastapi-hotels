@@ -1,15 +1,26 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from migrations import __models__  # noqa
-from src.bookings.routers import bookings_router
 from src.auth.routers import auth_router
+from src.bookings.routers import bookings_router
+from src.config import BASE_DIR, CORS_ALLOW_ORIGINS
 from src.hotels.routers.hotels import hotels_router
 from src.hotels.routers.rooms import rooms_router
+from src.images.routers import image_router
 from src.logging import init_loggers
+from src.pages.auth import front_auth_router
+from src.pages.bookings import front_bookings_router
+from src.pages.hotels import front_hotels_router
 
 init_loggers()
 
 app = FastAPI()
+
+static_files = StaticFiles(directory=BASE_DIR / 'static')
+
+app.mount('/static', static_files, 'static')
 
 app.include_router(
     bookings_router,
@@ -30,4 +41,32 @@ app.include_router(
     rooms_router,
     prefix='/api/v1',
     tags=['Rooms'],
+)
+
+app.include_router(
+    image_router,
+    prefix='/api/v1',
+    tags=['Images'],
+)
+
+app.include_router(
+    front_auth_router,
+    prefix='',
+)
+app.include_router(
+    front_bookings_router,
+    prefix='',
+)
+app.include_router(
+    front_hotels_router,
+    prefix='',
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ALLOW_ORIGINS,
+    allow_credentials=True,
+    allow_methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allow_headers=['Content-Type', 'Authorization', 'Set-Cookie',
+                   'Accept-Control-Allow-Headers', 'Access-Authorization'],
 )

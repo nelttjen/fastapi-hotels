@@ -1,13 +1,12 @@
 import logging
 from typing import AsyncGenerator
 
+from sqlalchemy import MetaData
 from sqlalchemy.event import listens_for
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker, declarative_base, DeclarativeMeta
-from sqlalchemy import MetaData
+from sqlalchemy.orm import DeclarativeMeta, declarative_base, sessionmaker
 
-from src.config import db_settings, config
-
+from src.config import config, db_settings
 
 engine = create_async_engine(db_settings.DATABASE_URL)
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)  # noqa

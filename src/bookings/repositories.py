@@ -1,17 +1,16 @@
 import datetime
 import logging
-from dataclasses import dataclass
 from collections.abc import Sequence
-from typing import Optional
+from dataclasses import dataclass
 
-from sqlalchemy import RowMapping, select, func, and_, or_
+from sqlalchemy import and_, func, or_, select
 
-from src.base.exceptions import HTTP_EXC, NotFound
-from src.database import engine
+from src.base.exceptions import NotFound
 from src.base.repositories import BaseRepository
-from src.bookings.models import Booking
-from src.hotels.models import Room
 from src.bookings.exceptions import NoRoomsAvailable
+from src.bookings.models import Booking
+from src.database import engine
+from src.hotels.models import Room
 
 logger = logging.getLogger('all')
 
@@ -60,11 +59,7 @@ class BookingRepository(BaseRepository[Booking]):
             raise NoRoomsAvailable
 
     async def get_my_bookings(self, user_id: int) -> Sequence[Booking]:
-        stmt = select(
-            Booking,
-        ).join(
-            Room, Room.id == Booking.room_id, isouter=True,
-        ).where(Booking.user_id == user_id).order_by(Booking.id.desc())
+        stmt = select(Booking).where(Booking.user_id == user_id).order_by(Booking.id.desc())
 
         result = await self.session.scalars(stmt)
         return result.all()

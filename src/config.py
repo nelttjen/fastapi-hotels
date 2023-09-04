@@ -5,8 +5,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 load_dotenv(BASE_DIR / '.env')
@@ -34,6 +34,12 @@ db_settings = DatabaseSettings()
 DEBUG = True
 ENABLE_QUERY_DEBUGGING = True
 SECRET_KEY = os.getenv('SECRET_KEY')
+
+CORS_ALLOW_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1',
+]
 
 CONNECTION_PROTOCOL = 'http'
 DOMAIN = '127.0.0.1:8000'

@@ -5,9 +5,9 @@ from typing import Any
 
 from jose import JWTError, jwt
 
-from src.auth.jwt import TokenType, create_tokens
 from src.auth.config import ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET
 from src.auth.exceptions import BadCredentialsException, BadTokenException
+from src.auth.jwt import TokenType, create_tokens
 from src.users.models import User
 from src.users.schemas import UserCreate
 from src.users.services import RegisterService, UserService

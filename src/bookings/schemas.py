@@ -1,6 +1,7 @@
 import datetime
 
 from pydantic import field_validator
+
 from src.base.schemas import BaseORMModel
 from src.hotels.schemas import DateRangeModel, HotelRoomInfo
 
