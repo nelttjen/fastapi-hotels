@@ -1,5 +1,6 @@
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
+
 from src.config import SECRET_KEY
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')

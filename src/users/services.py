@@ -9,11 +9,9 @@ from src.auth.config import pwd_context
 from src.base.exceptions import HTTP_EXC, NotFound, Unauthorized
 from src.base.repositories import Transaction
 from src.config import config
-from src.users.exceptions import (
-    PasswordValidationError,
-    UsernameOrEmailAlreadyExists,
-    UsernameValidationError,
-)
+from src.users.exceptions import (PasswordValidationError,
+                                  UsernameOrEmailAlreadyExists,
+                                  UsernameValidationError)
 from src.users.models import User
 from src.users.repositories import UserRepository
 from src.users.schemas import UserUpdate

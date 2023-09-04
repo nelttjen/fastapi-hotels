@@ -1,15 +1,12 @@
-import datetime
-
-from fastapi import APIRouter, Depends
 from typing import Annotated, List
 
+from fastapi import APIRouter, Depends
 from starlette import status
 
 from src.auth.dependencies import get_current_user
-from src.bookings.services import BookingService
 from src.bookings.dependencies import get_booking_service
-from src.bookings.models import Booking
 from src.bookings.schemas import BookingCreateData, BookingDetail
+from src.bookings.services import BookingService
 from src.users.models import User
 
 bookings_router = APIRouter(

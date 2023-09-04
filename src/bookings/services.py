@@ -2,12 +2,12 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from src.base.exceptions import Forbidden
+from src.base.repositories import Transaction
 from src.bookings.models import Booking
 from src.bookings.repositories import BookingRepository
-from src.base.repositories import Transaction
 from src.bookings.schemas import BookingCreateData
-from src.users.models import User
 from src.hotels.services import HotelService
+from src.users.models import User
 
 
 @dataclass
@@ -41,7 +41,6 @@ class BookingService:
     ) -> None:
         async with self.transaction:
             booking = await self.repository.get_booking_or_404(booking_id)
-            print(booking)
             if booking.user_id != user_id:
                 raise Forbidden('You are not allowed to delete this booking')
             await self.repository.delete(booking)

@@ -1,8 +1,8 @@
 from typing import List
 
+from sqlalchemy import JSON, ForeignKey, Integer, String
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, ForeignKey, JSON
 
 from src.database import DatabaseModel
 

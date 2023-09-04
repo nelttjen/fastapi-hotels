@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 from src.base.exceptions import NotFound
 from src.base.repositories import Transaction
+from src.hotels.models import Hotel, Room
 from src.hotels.repositories import HotelRepository
-from src.hotels.models import Room, Hotel
 
 
 @dataclass
