@@ -1,9 +1,12 @@
+from os import PathLike
+from pathlib import Path
 from typing import List
 
 from sqlalchemy import JSON, ForeignKey, Integer, String
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.config import IMAGES_URL
 from src.database import DatabaseModel
 
 
@@ -34,6 +37,16 @@ class Hotel(DatabaseModel):
     rooms: List['Room'] = relationship(
         'Room', back_populates='hotel', lazy='select',
     )
+
+    @property
+    def images(self) -> dict[str, PathLike[Path]]:
+        filename = f'{self.image_id}.webp'
+        return {
+            'original': IMAGES_URL / filename,
+            '1920x1080': IMAGES_URL / 'resized/1920_1080' / ('resized_1920_1080' + filename),
+            '1024x562': IMAGES_URL / 'resized/1024_562' / ('resized_1024_562' + filename),
+            '200x100': IMAGES_URL / 'resized/200_100' / ('resized_200_100' + filename),
+        }
 
 
 class Room(AsyncAttrs, DatabaseModel):
@@ -69,3 +82,13 @@ class Room(AsyncAttrs, DatabaseModel):
     hotel: 'Hotel' = relationship(
         'Hotel', back_populates='rooms', lazy='joined',
     )
+
+    @property
+    def images(self) -> dict[str, PathLike[Path]]:
+        filename = f'{self.image_id}.webp'
+        return {
+            'original': IMAGES_URL / filename,
+            '1920x1080': IMAGES_URL / 'resized/1920_1080' / ('resized_1920_1080' + filename),
+            '1024x562': IMAGES_URL / 'resized/1024_562' / ('resized_1024_562' + filename),
+            '200x100': IMAGES_URL / 'resized/200_100' / ('resized_200_100' + filename),
+        }

@@ -4,7 +4,7 @@ from src.pages import templates
 
 front_bookings_router = APIRouter(
     prefix='/bookings',
-    tags=['frontend'],
+    tags=['Frontend'],
 )
 
 

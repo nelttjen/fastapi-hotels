@@ -26,6 +26,11 @@ class UserRepository(BaseRepository[User]):
     async def get_by_id(self, user_id: int) -> User | None:
         return await self.session.get(User, user_id) or None
 
+    async def get_by_email(self, email: str) -> User | None:
+        return await self.session.scalar(
+            select(User).where(User.email == email),
+        )
+
     async def credentials_available(
             self, email: str, username: str, not_by: Optional[int] = None,
     ) -> None:

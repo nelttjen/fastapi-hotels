@@ -1,11 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 
 from migrations import __models__  # noqa
 from src.auth.routers import auth_router
 from src.bookings.routers import bookings_router
-from src.config import BASE_DIR, CORS_ALLOW_ORIGINS
+from src.cache import KeyBuilderCache, redis
+from src.config import BASE_DIR, CORS_ALLOW_ORIGINS, app_settings
 from src.hotels.routers.hotels import hotels_router
 from src.hotels.routers.rooms import rooms_router
 from src.images.routers import image_router
@@ -14,9 +17,7 @@ from src.pages.auth import front_auth_router
 from src.pages.bookings import front_bookings_router
 from src.pages.hotels import front_hotels_router
 
-init_loggers()
-
-app = FastAPI()
+app = FastAPI(debug=app_settings.DEBUG)
 
 static_files = StaticFiles(directory=BASE_DIR / 'static')
 
@@ -70,3 +71,16 @@ app.add_middleware(
     allow_headers=['Content-Type', 'Authorization', 'Set-Cookie',
                    'Accept-Control-Allow-Headers', 'Access-Authorization'],
 )
+
+
+@app.on_event('startup')
+async def startup_event():
+    init_loggers()
+
+    FastAPICache.init(
+        backend=RedisBackend(
+            redis,
+        ),
+        prefix='fastapi-cache',
+        key_builder=KeyBuilderCache.key_builder,
+    )

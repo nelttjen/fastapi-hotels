@@ -5,7 +5,7 @@ from src.pages import templates
 
 front_auth_router = APIRouter(
     prefix='/auth',
-    tags=['frontend'],
+    tags=['Frontend'],
 )
 
 

@@ -28,7 +28,7 @@ $(document).ready(function() {
             let html = `
             <div class="container mt-5">
                 <div class="card">
-                    <img class="hotel-image" src="/static/images/${data.image_id}.webp" alt="Изображение отеля" style="max-width: 1800px; max-height: 900px;">
+                    <img class="hotel-image" src="/static/images/resized/1920_1080/resized_1920_1080_${data.image_id}.webp" alt="Изображение отеля" style="max-width: 1800px; max-height: 900px;">
                     <div class="card-body">
                         <h1 class="hotel-name">${data.name}</h1>
                         <p class="hotel-location">${data.location}</p>
@@ -71,7 +71,7 @@ $(document).ready(function() {
                 <div class="card">
                     <div class="row no-gutters">
                         <div class="col-md-4">
-                            <img class="card-img" src="/static/images/${data.image_id}.webp" alt="Изображение комнаты" style="width: 400px; height: 200px;">
+                            <img class="card-img" src="/static/images/resized/1024_562/resized_1024_562_${room.image_id}.webp" alt="Изображение комнаты" style="width: 400px; height: 200px;">
                         </div>
                         <div class="col-md-8">
                             <div class="card-body">
@@ -87,7 +87,7 @@ $(document).ready(function() {
                                         ${services}
                                     </ul>
                                 </p>
-                                
+
                             </div>
                             <div class="card-footer">
                                 ${button}
