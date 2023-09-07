@@ -12,6 +12,9 @@ BASE_DIR = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 load_dotenv(BASE_DIR / '.env')
 
 
+_base_env_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
+
+
 class DatabaseSettings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
@@ -26,14 +29,70 @@ class DatabaseSettings(BaseSettings):
                 f'{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/'
                 f'{self.POSTGRES_DB}')
 
-    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
+    model_config = _base_env_config.copy()
+
+
+class RedisSettings(BaseSettings):
+    REDIS_HOST: str
+    REDIS_PORT: int
+
+    @property
+    def REDIS_URL(self) -> str:  # noqa
+        return f'redis://{self.REDIS_HOST}:{self.REDIS_PORT}'
+
+    @property
+    def CELERY_BROKER_URL(self) -> str:  # noqa
+        return f'redis://{self.REDIS_HOST}:{self.REDIS_PORT}/1'
+
+    @property
+    def CELERY_RESULT_BACKEND(self) -> str:  # noqa
+        return f'redis://{self.REDIS_HOST}:{self.REDIS_PORT}/2'
+
+    model_config = _base_env_config.copy()
+
+
+class MongoSettings(BaseSettings):
+    MONGODB_HOST: str
+    MONGODB_PORT: int
+    MONGODB_USER: str
+    MONGODB_PASSWORD: str
+    MONGODB_DB: str
+
+    @property
+    def MONGODB_AUTHPARAMS(self) -> dict[str, Any]:  # noqa
+        return {
+            'host': self.MONGODB_HOST,
+            'port': self.MONGODB_PORT,
+            'username': self.MONGODB_USER,
+            'password': self.MONGODB_PASSWORD,
+            'authSource': self.MONGODB_DB,
+        }
+
+    model_config = _base_env_config.copy()
+
+
+class SMTPSettings(BaseSettings):
+    SMTP_HOST: str
+    SMTP_PORT: int
+    SMTP_USER: str
+    SMTP_PASSWORD: str
+
+    model_config = _base_env_config.copy()
+
+
+class AppSettings(BaseSettings):
+    DEBUG: bool
+    ENABLE_QUERY_DEBUGGING: bool
+    SECRET_KEY: str
+
+    model_config = _base_env_config.copy()
 
 
 db_settings = DatabaseSettings()
-
-DEBUG = True
-ENABLE_QUERY_DEBUGGING = True
-SECRET_KEY = os.getenv('SECRET_KEY')
+redis_settings = RedisSettings()
+mongo_settings = MongoSettings()
+google_smtp_settings = SMTPSettings()
+app_settings = AppSettings()
 
 CORS_ALLOW_ORIGINS = [
     'http://127.0.0.1:8000',
@@ -43,7 +102,7 @@ CORS_ALLOW_ORIGINS = [
 
 CONNECTION_PROTOCOL = 'http'
 DOMAIN = '127.0.0.1:8000'
-
+IMAGES_URL = Path('/static/images')
 
 LOGGING = {
     'version': 1,

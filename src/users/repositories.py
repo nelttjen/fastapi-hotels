@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 from typing import Optional
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 
 from src.base.repositories import BaseRepository
 from src.users.exceptions import UsernameOrEmailAlreadyExists
@@ -25,6 +25,11 @@ class UserRepository(BaseRepository[User]):
 
     async def get_by_id(self, user_id: int) -> User | None:
         return await self.session.get(User, user_id) or None
+
+    async def get_by_email(self, email: str) -> User | None:
+        return await self.session.scalar(
+            select(User).where(User.email == email),
+        )
 
     async def credentials_available(
             self, email: str, username: str, not_by: Optional[int] = None,

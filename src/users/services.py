@@ -80,6 +80,9 @@ class UserService:
     async def get_user_by_id(self, user_id: int) -> User | None:
         return await self.repository.get_by_id(user_id=user_id)
 
+    async def get_user_by_email(self, email: str) -> User | None:
+        return await self.repository.get_by_email(email=email)
+
     async def _get_user_or_exception(
             self, user_id: int, exception: Type[HTTP_EXC], detail: Optional[str] = None,
     ) -> User | None:

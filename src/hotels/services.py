@@ -1,6 +1,8 @@
 import datetime
 from dataclasses import dataclass
 
+from sqlalchemy import RowMapping
+
 from src.base.exceptions import NotFound
 from src.base.repositories import Transaction
 from src.hotels.models import Hotel, Room
@@ -21,7 +23,7 @@ class HotelService:
         name = name.strip().lower()
         return await self.repository.search_hotels(name, date_from, date_to)
 
-    async def get_hotel_info(self, hotel_id: int) -> Hotel:
+    async def get_hotel_info(self, hotel_id: int) -> RowMapping:
         result = await self.repository.get_hotel_info(hotel_id)
         if not Hotel:
             raise NotFound('Hotel with this id does not exist')

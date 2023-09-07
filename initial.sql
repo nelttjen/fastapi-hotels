@@ -1,4 +1,4 @@
-BEGIN TRANSACTION isolation level repeatable read;
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 INSERT INTO hotel (name, location, services, rooms_quantity, image_id) VALUES
 ('Cosmos Collection Altay Resort', 'Республика Алтай, Майминский район, село Урлу-Аспак, Лесхозная улица, 20', '["Wi-Fi", "Бассейн", "Парковка", "Кондиционер в номере"]', 15, 1),
 ('Skala', 'Республика Алтай, Майминский район, поселок Барангол, Чуйская улица 40а', '["Wi-Fi", "Парковка"]', 23, 2),
@@ -21,8 +21,8 @@ INSERT INTO room (hotel_id, name, description, price, quantity, services, image_
 (6, 'Стандарт (типовой корпус)', 'Стандартный номер.', 8125, 45, '[]', 17);
 
 INSERT INTO "user" (username, email, password) VALUES
-('user1', 'fedor@moloko.ru', 'tut_budet_hashed_password_1'),
-('user2', 'sharik@moloko.ru', 'tut_budet_hashed_password_2');
+('user1', 'fedor@moloko.ru', 'hashed_password_1'),
+('user2', 'sharik@moloko.ru', 'hashed_password_2');
 
 INSERT INTO booking (room_id, user_id, date_from, date_to, price) VALUES
 (1, 1, '2023-06-15', '2023-06-30', 24500),

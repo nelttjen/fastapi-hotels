@@ -51,30 +51,33 @@ class HotelRepository(BaseRepository[Hotel | Room]):
             self, name: str, date_from: datetime.date, date_to: datetime.date,
     ):
         """"""
+        # TODO: rewrite query to use search hotels instead (3x faster)
         """
-        with const(curr_date) as (
+        explain analyse with const(curr_date) as (
             values (date('2023-09-04'))
+        ), search_hotels as (
+           select h.id from hotel h
+           where h.name ilike '%алтай%' or h.location ilike '%алтай%'
         ), booked_rooms_by_hotels as (
-            select count(b.id) as rooms_booked, h.id as hotel_id from booking b
+            select count(b.id) as rooms_booked, sh.id as hotel_id from booking b
             join const on true
             left join room r on r.id = b.room_id
-            inner join hotel h on h.id = r.hotel_id and (h.name ilike '%алтай%' or h.location ilike '%алтай%')
+            join search_hotels sh on sh.id = r.id
             WHERE b.date_from <= const.curr_date AND b.date_to >= const.curr_date OR
                   b.date_from > const.curr_date AND b.date_to < const.curr_date OR
                   b.date_from <= const.curr_date AND b.date_to >= const.curr_date AND b.date_to < const.curr_date OR
                   b.date_from > const.curr_date AND b.date_from <= const.curr_date AND b.date_to >= const.curr_date
-            group by r.hotel_id, h.id
+            group by sh.id
         ), rooms_by_hotels as (
-            select h.id as hotel_id, sum(room.quantity) as rooms_count from room
-            left join hotel h on h.id = room.hotel_id
-            where h.name ilike '%алтай%' or h.location ilike '%алтай%'
-            group by room.hotel_id, h.id
+            select sh.id as hotel_id, sum(r.quantity) as rooms_count from room r
+            join search_hotels sh on sh.id = r.id
+            group by sh.id
         )
         select h.id, h.name, h.image_id, (rbh.rooms_count - br.rooms_booked) as rooms_left from hotel h
         join booked_rooms_by_hotels br on br.hotel_id = h.id
         join rooms_by_hotels rbh on rbh.hotel_id = h.id
-        where h.name ilike '%алтай%' or h.location ilike '%алтай%' and rbh.rooms_count > br.rooms_booked;
-        """
+        join search_hotels sh on h.id = sh.id;
+                """
         booked_by_hotels = await self.get_booked_by_hotels(date_from=date_from, date_to=date_to, name=name)
 
         rooms_by_hotels = await self.get_rooms_by_hotels(name=name)

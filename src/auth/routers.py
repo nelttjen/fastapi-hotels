@@ -5,9 +5,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from src.auth.config import oauth2_scheme
 from src.auth.dependencies import get_auth_service
-from src.auth.schemas import RefreshToken, UserReadTokens
+from src.auth.schemas import EmailCodeRequestData, RefreshToken, UserReadTokens
 from src.auth.services import AuthService
-from src.base.schemas import DetailModel
+from src.base.schemas import DetailModel, SuccessModel
 from src.users.schemas import UserCreate
 
 auth_router = APIRouter(
@@ -39,7 +39,7 @@ async def token(
 @auth_router.post(
     path='/register',
     status_code=status.HTTP_201_CREATED,
-    response_model=UserReadTokens,
+    response_model=DetailModel,
     responses={
         status.HTTP_400_BAD_REQUEST: {
             'model': DetailModel,
@@ -55,7 +55,8 @@ async def register(
     user_create: UserCreate,
     user_service: Annotated[AuthService, Depends(get_auth_service)],
 ):
-    return await user_service.register_user(user_create)
+    await user_service.register_user(user_create)
+    return DetailModel(detail='User created successfully. Check your email for a confirmation link')
 
 
 @auth_router.post(
@@ -91,3 +92,41 @@ async def validate(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ):
     await auth_service.validate_access_token(access_token)
+
+
+@auth_router.post(
+    path='/recovery',
+    status_code=status.HTTP_201_CREATED,
+    response_model=SuccessModel,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            'model': DetailModel,
+            'description': 'User with this email does not exist',
+        },
+    },
+)
+async def send_recovery_code_to_email(
+        email_code_data: EmailCodeRequestData,
+        auth_service: Annotated[AuthService, Depends(get_auth_service)],
+):
+    await auth_service.send_recovery_email(email=email_code_data.email)
+    return SuccessModel(success=True)
+
+
+@auth_router.post(
+    path='/activate',
+    status_code=status.HTTP_201_CREATED,
+    response_model=SuccessModel,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            'model': DetailModel,
+            'description': 'User with this email does not exist',
+        },
+    },
+)
+async def send_activate_code_to_email(
+        email_code_data: EmailCodeRequestData,
+        auth_service: Annotated[AuthService, Depends(get_auth_service)],
+):
+    await auth_service.send_activation_email(email=email_code_data.email)
+    return SuccessModel(success=True)

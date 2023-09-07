@@ -6,11 +6,15 @@ from typing import Any
 from jose import JWTError, jwt
 
 from src.auth.config import ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET
-from src.auth.exceptions import BadCredentialsException, BadTokenException
+from src.auth.exceptions import (BadCredentialsException, BadTokenException,
+                                 UserForRecoveryNotFound, UserNotActiveException)
 from src.auth.jwt import TokenType, create_tokens
+from src.auth.repositories import VerificationCodeRepository
+from src.auth.models import CodeTypes, VerificationCode
 from src.users.models import User
 from src.users.schemas import UserCreate
 from src.users.services import RegisterService, UserService
+from src.celery.tasks.emails import send_recovery_email, send_activation_email
 
 debugger = logging.getLogger('debugger')
 
@@ -18,6 +22,7 @@ debugger = logging.getLogger('debugger')
 @dataclass
 class AuthService:
     user_service: UserService
+    verification_code_repository: VerificationCodeRepository
 
     @staticmethod
     def _parse_token(  # noqa: FNE008
@@ -66,6 +71,8 @@ class AuthService:
         user = await self.user_service.get_user_for_login(query=username)
         if not user:
             raise BadCredentialsException
+        if not user.is_active:
+            raise UserNotActiveException
         if not await RegisterService.check_password_hash(password, user.password):
             raise BadCredentialsException
 
@@ -88,10 +95,28 @@ class AuthService:
 
     async def register_user(
         self, new_user: UserCreate,
-    ) -> dict[str, Any]:
-        user = await self.user_service.create_user(
+    ) -> None:
+        await self.user_service.create_user(
             username=new_user.username,
             email=new_user.email,
             password=new_user.password,
         )
-        return {'user': user, **create_tokens(user)}
+
+    async def _find_or_create_code(self, email: str, code_type: CodeTypes) -> VerificationCode:
+        user = await self.user_service.get_user_by_email(email=email)
+        if not user:
+            raise UserForRecoveryNotFound
+
+        code = await self.verification_code_repository.check_code_exists(user.id, code_type)
+        if not code:
+            code = await self.verification_code_repository.generate_verification_code(user.id, CodeTypes.ACTIVATION)
+
+        return code
+
+    async def send_recovery_email(self, email: str) -> None:
+        code = await self._find_or_create_code(email, CodeTypes.RECOVERY)
+        send_recovery_email.delay(email=email, code=code.code)
+
+    async def send_activation_email(self, email: str):
+        code = await self._find_or_create_code(email, CodeTypes.ACTIVATION)
+        send_activation_email.delay(email=email, code=code.code)

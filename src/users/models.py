@@ -1,5 +1,4 @@
-
-from sqlalchemy import Integer, String
+from sqlalchemy import Boolean, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database import DatabaseModel
@@ -19,4 +18,7 @@ class User(DatabaseModel):
     )
     email: Mapped[str] = mapped_column(
         String(128), unique=True, nullable=True,
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default='FALSE',
     )
