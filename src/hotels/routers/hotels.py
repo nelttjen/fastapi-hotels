@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, status
 from fastapi_cache.decorator import cache
 
 from src.base.schemas import DetailModel
+from src.cache import KeyBuilderCache
 from src.hotels.dependencies import get_hotel_service
 from src.hotels.schemas import DateRangeModel, HotelInfo, HotelWithRoomsLeft
 from src.hotels.services import HotelService
-from src.cache import KeyBuilderCache
 
 hotels_router = APIRouter(
     prefix='/hotels',

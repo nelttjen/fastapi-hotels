@@ -87,7 +87,7 @@ $(document).ready(function() {
                                         ${services}
                                     </ul>
                                 </p>
-                                
+
                             </div>
                             <div class="card-footer">
                                 ${button}

@@ -1,10 +1,10 @@
 import logging
 import smtplib
-
-from src.config import google_smtp_settings, DOMAIN, CONNECTION_PROTOCOL
 from email.message import EmailMessage
-from src.celery.celery import celery_app
+
 from src.auth.models import CodeTypes
+from src.celery.celery import celery_app
+from src.config import CONNECTION_PROTOCOL, DOMAIN, google_smtp_settings
 from src.utils import assert_never
 
 logger = logging.getLogger('all')
@@ -36,7 +36,7 @@ class MailTemplate:
         message.set_content(
             f"""
                 <h1> Welcome to booking service! </h1>
-                <p> Please click the link below to activate your account: 
+                <p> Please click the link below to activate your account:
                 <a href="{activation_url}">{activation_url}</a></p>
                 """,
             subtype='html',
@@ -54,7 +54,7 @@ class MailTemplate:
         message.set_content(
             f"""
                     <h1> Hello! You have requested a link to restore your account on the bookings service!</h1>
-                    <p> Please click the link below to restore your account: 
+                    <p> Please click the link below to restore your account:
                     <a href="{recovery_url}">{recovery_url}</a></p>
                     """,
             subtype='html',
@@ -69,7 +69,6 @@ def send_email(message: EmailMessage) -> None:
             server.sendmail(message['From'], [message['To']], message.as_string())
     except Exception as e:
         logger.error(e)
-    pass
 
 
 @celery_app.task

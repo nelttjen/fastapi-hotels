@@ -7,14 +7,15 @@ from jose import JWTError, jwt
 
 from src.auth.config import ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET
 from src.auth.exceptions import (BadCredentialsException, BadTokenException,
-                                 UserForRecoveryNotFound, UserNotActiveException)
+                                 UserForRecoveryNotFound,
+                                 UserNotActiveException)
 from src.auth.jwt import TokenType, create_tokens
-from src.auth.repositories import VerificationCodeRepository
 from src.auth.models import CodeTypes, VerificationCode
+from src.auth.repositories import VerificationCodeRepository
+from src.celery.tasks.emails import send_activation_email, send_recovery_email
 from src.users.models import User
 from src.users.schemas import UserCreate
 from src.users.services import RegisterService, UserService
-from src.celery.tasks.emails import send_recovery_email, send_activation_email
 
 debugger = logging.getLogger('debugger')
 

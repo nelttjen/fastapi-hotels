@@ -1,9 +1,9 @@
 import datetime
 import hashlib
 
-from src.auth.models import VerificationCode, CodeTypes
-from src.base.repositories import AbstractMongoRepository
 from src.auth.config import EMAIL_CODE_EXPIRE_MINUTES
+from src.auth.models import CodeTypes, VerificationCode
+from src.base.repositories import AbstractMongoRepository
 
 
 class VerificationCodeRepository(AbstractMongoRepository[VerificationCode]):

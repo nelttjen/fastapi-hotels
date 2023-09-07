@@ -1,20 +1,20 @@
 from abc import ABC
-from dataclasses import dataclass
-from typing import Generic, Iterable, Optional, Type, TypeVar, Tuple
 from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Generic, Iterable, Optional, Tuple, Type, TypeVar
 
+from bson import ObjectId
+from pymongo import MongoClient
+from pymongo.collection import Collection
+from pymongo.database import Database
 from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.ext.asyncio import AsyncSession
-from pymongo.database import Database
-from pymongo.collection import Collection
-from pymongo import MongoClient
-from bson import ObjectId
 
 from src.base.exceptions import HTTP_EXC, InternalServerError
-from src.database import DatabaseModel
-from src.config import mongo_settings
 from src.base.models import MongoModel
+from src.config import mongo_settings
+from src.database import DatabaseModel
 
 T = TypeVar('T', bound=DatabaseModel)
 MT = TypeVar('MT', bound=MongoModel)
@@ -133,8 +133,10 @@ class AbstractMongoRepository(ABC, Generic[MT]):
         return only
 
     def save(self, model: MT) -> InsertOneResult | UpdateResult:  # noqa
-        """
-        Save entity to database. It will update the entity if it has id, otherwise it will insert it.
+        """Save entity to database.
+
+        It will update the entity if it has id, otherwise it will insert
+        it.
         """
         document = model.to_document()
 
@@ -149,9 +151,7 @@ class AbstractMongoRepository(ABC, Generic[MT]):
         return result
 
     def delete(self, model: MT) -> DeleteResult | None:
-        """
-        Delete entity from database.
-        """
+        """Delete entity from database."""
         if not model.id:
             return None
         return self.get_collection().delete_one({'_id': model.id})

@@ -5,8 +5,8 @@ from jose import JWTError
 
 from src.auth.config import oauth2_scheme
 from src.auth.jwt import TokenType
-from src.auth.services import AuthService
 from src.auth.repositories import VerificationCodeRepository
+from src.auth.services import AuthService
 from src.base.exceptions import Unauthorized
 from src.users.dependencies import get_user_service
 from src.users.models import User

@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 from typing import Optional
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import or_, select
 
 from src.base.repositories import BaseRepository
 from src.users.exceptions import UsernameOrEmailAlreadyExists

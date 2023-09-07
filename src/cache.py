@@ -1,10 +1,10 @@
 import hashlib
 import logging
-from typing import Any, Optional, Callable
+from typing import Any, Callable, Optional
 
-from redis import asyncio as aioredis
 from fastapi import Request, Response
 from fastapi_cache import FastAPICache
+from redis import asyncio as aioredis
 
 from src.config import redis_settings
 
@@ -22,8 +22,7 @@ class KeyBuilderCache:
             response: Response = None,
             *args: Any, **kwargs,
     ) -> str:
-        """
-        Build a cache key for the given function.
+        """Build a cache key for the given function.
 
         :param func: The function to build a cache key for.
         :param namespace: The namespace to use for the cache key.
@@ -58,8 +57,7 @@ class KeyBuilderCache:
     async def clear_cache_for_func(
             func: Callable,
     ):
-        """
-        Clear the cache for the given function.
+        """Clear the cache for the given function.
 
         :param func: The function to clear the cache for.
         """

@@ -17,7 +17,7 @@ services:
     container_name: fastapi-mongodb-hotels
     restart: unless-stopped
     ports:
-      - '27017:27017'
+      - "27017:27017"
     expose:
       - 27017
     volumes:
@@ -78,8 +78,8 @@ services:
       - database
       - redis
       - mongodb
-#    volumes:
-#      - .:/app/
+    #    volumes:
+    #      - .:/app/
     depends_on:
       - redis
       - postgresdb

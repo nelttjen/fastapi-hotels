@@ -6,8 +6,8 @@ from sqlalchemy import JSON, ForeignKey, Integer, String
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.database import DatabaseModel
 from src.config import IMAGES_URL
+from src.database import DatabaseModel
 
 
 class Hotel(DatabaseModel):

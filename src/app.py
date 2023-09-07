@@ -7,8 +7,8 @@ from fastapi_cache.backends.redis import RedisBackend
 from migrations import __models__  # noqa
 from src.auth.routers import auth_router
 from src.bookings.routers import bookings_router
-from src.config import BASE_DIR, CORS_ALLOW_ORIGINS, app_settings
 from src.cache import KeyBuilderCache, redis
+from src.config import BASE_DIR, CORS_ALLOW_ORIGINS, app_settings
 from src.hotels.routers.hotels import hotels_router
 from src.hotels.routers.rooms import rooms_router
 from src.images.routers import image_router
@@ -16,7 +16,6 @@ from src.logging import init_loggers
 from src.pages.auth import front_auth_router
 from src.pages.bookings import front_bookings_router
 from src.pages.hotels import front_hotels_router
-
 
 app = FastAPI(debug=app_settings.DEBUG)
 
