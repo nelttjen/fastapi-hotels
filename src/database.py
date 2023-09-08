@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from sqlalchemy import MetaData
@@ -19,6 +20,13 @@ DatabaseModel: DeclarativeMeta = declarative_base(metadata=metadata)
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
         yield session
+
+
+@asynccontextmanager
+async def context_db_session() -> AsyncSession:
+    session: AsyncSession = async_session_maker()
+    yield session
+    await session.close()
 
 
 @listens_for(engine.sync_engine, 'before_cursor_execute', named=True)

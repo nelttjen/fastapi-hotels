@@ -76,6 +76,7 @@ app.add_middleware(
 @app.on_event('startup')
 async def startup_event():
     init_loggers()
+    from src.admin import admin  # noqa
 
     FastAPICache.init(
         backend=RedisBackend(
