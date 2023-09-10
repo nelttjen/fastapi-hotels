@@ -15,3 +15,12 @@ class RefreshToken(BaseModel):
 
 class EmailCodeRequestData(BaseModel):
     email: EmailStr
+
+
+class RecoveryUserData(BaseModel):
+    code: str
+    new_password: str
+
+
+class ActivateUserData(BaseModel):
+    code: str

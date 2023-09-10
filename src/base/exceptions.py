@@ -70,6 +70,19 @@ class DataConflict(HTTPException):
         )
 
 
+class TooManyRequests(HTTPException):
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+    detail = 'Too many requests'
+    headers = None
+
+    def __init__(self, detail: Optional[str] = None):
+        super().__init__(
+            status_code=self.status_code,
+            detail=detail or self.detail,
+            headers=self.headers,
+        )
+
+
 class InternalServerError(HTTPException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     detail = 'Internal server error'

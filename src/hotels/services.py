@@ -1,5 +1,7 @@
 import datetime
+from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Optional
 
 from sqlalchemy import RowMapping
 
@@ -30,6 +32,6 @@ class HotelService:
         return result
 
     async def get_hotel_rooms(
-            self, hotel_id: int, date_from: datetime.date, date_to: datetime.date,
-    ):
-        return await self.repository.get_hotel_rooms_available(hotel_id, date_from, date_to)
+            self, hotel_id: int, date_from: datetime.date, date_to: datetime.date, room_id: Optional[int] = None,
+    ) -> Sequence[RowMapping]:
+        return await self.repository.get_hotel_rooms_info(hotel_id, date_from, date_to, room_id=room_id)

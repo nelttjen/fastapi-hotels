@@ -84,3 +84,39 @@ function getDateDaysDifference(dateFrom, dateTo) {
     return differenceInMilliseconds / (1000 * 60 * 60 * 24);
 
 }
+
+
+function formatHeader() {
+    const $userProfileList = $('.user-profile');
+    const userCookie = getCookie('user');
+
+    let user = undefined;
+    try {
+        user = JSON.parse(userCookie);
+    } catch (e) {}
+
+    if (user) {
+
+        $userProfileList.html(`
+            <li class="nav-item">
+                <a class="nav-link" href="/bookings/my">
+                    <img src="/static/images/default/avatar.png" width="29" height="29" alt="avt" style="margin-right: 8px;">
+                    <span>${user.username}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/auth/logout">Log out</a>
+            </li>
+        `);
+
+    } else {
+        $userProfileList.html(`
+        <li class="nav-item"><a class="nav-link" href="/auth/login">Log in</a></li>
+        <li class="nav-item"><a class="nav-link" href="/auth/register">Register</a></li>
+        `)
+    }
+}
+
+$(document).ready(function() {
+    formatHeader();
+})

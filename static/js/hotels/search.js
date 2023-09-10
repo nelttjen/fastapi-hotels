@@ -1,4 +1,15 @@
 $(document).ready(function() {
+    $(function(){
+        let today = new Date()
+        let tomorrow = new Date()
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        $('#startDate').prop('min', function(){
+            return today.toJSON().split('T')[0];
+        });
+        $('#endDate').prop('min', function(){
+            return tomorrow.toJSON().split('T')[0];
+        });
+    });
     $("#search-button").click(function(event) {
         event.preventDefault();
 
@@ -8,7 +19,11 @@ $(document).ready(function() {
 
         var apiUrl = "/api/v1/hotels/search/" + encodeURIComponent(title);
 
-        // Отправляем AJAX-запрос
+        if (!title || !startDate || !endDate) {
+            alert("You must fill the search field, date from and date to fields!");
+            return;
+        }
+
         $.ajax({
             url: apiUrl,
             type: "GET",
@@ -17,7 +32,7 @@ $(document).ready(function() {
                  displayHotels(response, startDate, endDate);
             },
             error: function(error) {
-                alert("При отправке запроса произошла ошибка: " + error.responseText);
+                alert(error.responseJSON.detail);
             }
         });
     });
@@ -27,10 +42,13 @@ $(document).ready(function() {
     let itemsList = [];
 
     if (hotels.length === 0) {
-        hotelList.html("<p>Нет доступных отелей.</p>");
+        hotelList.html(
+            "<p>There's no available hotels with current filters.</p>" +
+            "<p>Please try again with different filters.</p>"
+        );
     } else {
         hotels.forEach(function(hotel) {
-            let services = 'Нет услуг'
+            let services = 'No information about services'
             if (hotel.services.length > 0) {
                 services = hotel.services.join(', ')
             }
@@ -38,18 +56,18 @@ $(document).ready(function() {
             <div class="card">
                 <div class="row no-gutters">
                     <div class="col-md-4">
-                        <img src="/static/images/${hotel.image_id}.webp" class="card-img card-img-custom" alt="Изображение отеля">
+                        <img src="/static/images/${hotel.image_id}.webp" class="card-img card-img-custom" alt="Hotel image">
                     </div>
                 <div class="col-md-8">
                     <div class="card-body">
                         <h3 class="card-title">${hotel.name}</h3>
-                        <p class="card-text">Метоположение: ${hotel.location}</p>
-                        <p class="card-text">Количество комнат: ${hotel.rooms_count}</p>
-                        <p class="card-text">Количество доступных комнат на выбранные даты: ${hotel.rooms_left}</p>
-                        <p class="card-text">Услуги: ${services}</p>
+                        <p class="card-text">Location: ${hotel.location}</p>
+                        <p class="card-text">Rooms count: ${hotel.rooms_count}</p>
+                        <p class="card-text">Rooms left for the choosen dates: ${hotel.rooms_left}</p>
+                        <p class="card-text">Services: ${services}</p>
                     </div>
                     <div class="card-footer text-right">
-                        <a class="btn btn-primary" href="/hotels/${hotel.id}/rooms?date_from=${date_from}&date_to=${date_to}">Выбрать комнату</a>
+                        <a class="btn btn-primary" href="/hotels/${hotel.id}/rooms?date_from=${date_from}&date_to=${date_to}">Choose a room</a>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,13 @@
+{% extends 'app_base.html' %}
+
+{% block head %}
+    <title>Account activation</title>
+    <script src="/static/js/auth/activate.js"></script>
+{% endblock %}
+
+{% block content %}
+    <input type="hidden" id="code" value="{{ code }}">
+	<div class="activation-result">
+
+    </div>
+{% endblock %}

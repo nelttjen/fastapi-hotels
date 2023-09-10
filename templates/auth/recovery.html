@@ -1,0 +1,42 @@
+{% extends 'app_base.html' %}
+{% block head %}
+    <title>Восстановление пароля</title>
+    <script src="/static/js/auth/recovery.js"></script>
+    <style>
+    .recovery-form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .recovery-container {
+        max-width: 400px;
+        padding: 20px;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+	<div class="recovery-form">
+        <div class="col-md-6 offset-md-3">
+            <div class="recovery-container">
+                <h2 class="text-center">Восстановление пароля</h2>
+                <div class="recovery-content">
+                    <input type="hidden" id="code" value="{{ code }}">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Повторите пароль</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    <button id="recovery-button" class="btn btn-primary">Восстановить пароль</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

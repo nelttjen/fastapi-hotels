@@ -1,9 +1,9 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends
-from starlette import status
+from fastapi import APIRouter, Depends, Request, Response, status
 
 from src.auth.dependencies import get_current_user
+from src.base.schemas import SuccessModel
 from src.bookings.dependencies import get_booking_service
 from src.bookings.schemas import BookingCreateData, BookingDetail
 from src.bookings.services import BookingService
@@ -50,3 +50,12 @@ async def delete_my_booking(
     booking_service: Annotated[BookingService, Depends(get_booking_service)],
 ):
     return await booking_service.delete_booking(user.id, booking_id)
+
+
+@bookings_router.get(
+    '/test',
+    status_code=status.HTTP_201_CREATED,
+    response_model=SuccessModel,
+)
+async def test_endpoint(request: Request, response: Response):
+    return SuccessModel(success=True)

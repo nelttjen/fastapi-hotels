@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
@@ -71,6 +72,11 @@ app.add_middleware(
     allow_headers=['Content-Type', 'Authorization', 'Set-Cookie',
                    'Accept-Control-Allow-Headers', 'Access-Authorization'],
 )
+
+
+@app.route('/')
+async def root(*args, **kwargs):
+    return RedirectResponse('/hotels/search')
 
 
 @app.on_event('startup')

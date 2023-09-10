@@ -13,7 +13,7 @@ rooms_router = APIRouter(
 
 
 @rooms_router.get(
-    '/{hotel_id}/',
+    '/{hotel_id}',
     status_code=status.HTTP_200_OK,
     response_model=List[HotelRoomDetailedInfo],
 )
@@ -25,3 +25,19 @@ async def get_rooms_for_hotel(
 ):
     settings.validate_date_to()
     return await hotel_service.get_hotel_rooms(hotel_id, settings.date_from, settings.date_to)
+
+
+@rooms_router.get(
+    '/{hotel_id}/room/{room_id}',
+    status_code=status.HTTP_200_OK,
+    response_model=HotelRoomDetailedInfo,
+)
+@cache(expire=60 * 30, namespace='clearable-get_room_info')
+async def get_room_info(
+        hotel_id: int,
+        room_id: int,
+        settings: Annotated[DateRangeModel, Depends()],
+        hotel_service: Annotated[HotelService, Depends(get_hotel_service)],
+):
+    settings.validate_date_to()
+    return await hotel_service.get_hotel_rooms(hotel_id, settings.date_from, settings.date_to, room_id=room_id)

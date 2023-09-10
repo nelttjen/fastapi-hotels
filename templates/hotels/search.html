@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'app_base.html' %}
 
 {% block head %}
-	<title>Отели</title>
+	<title>Hotels</title>
     <script src="/static/js/hotels/search.js"></script>
     <style>
         .card-img-custom {
@@ -13,20 +13,20 @@
 
 {% block content %}
     <div class="container mt-5">
-        <h2>Поиск свободных отелей</h2>
+        <h2>Search available hotels</h2>
         <div class="form-group">
-            <label for="title">Название или местоположение (например: алтай):</label>
+            <label for="title">Name or location of the hotel (exmaple: алтай):</label>
             <input type="text" class="form-control" id="title" name="title" required>
         </div>
         <div class="form-group">
-            <label for="startDate">Дата заезда:</label>
+            <label for="startDate">From:</label>
             <input type="date" class="form-control" id="startDate" name="startDate" required>
         </div>
         <div class="form-group">
-            <label for="endDate">Дата выезда:</label>
+            <label for="endDate">To:</label>
             <input type="date" class="form-control" id="endDate" name="endDate" required>
         </div>
-        <button id="search-button" class="btn btn-primary">Искать отели</button>
+        <button id="search-button" class="btn btn-primary">Search</button>
     </div>
     <div class="found-hotels">
         <!-- js will fill this field -->

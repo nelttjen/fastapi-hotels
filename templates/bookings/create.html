@@ -1,0 +1,51 @@
+{% extends 'app_base.html' %}
+
+{% block head %}
+    <script src="/static/js/bookings/create.js"></script>
+    <title>Create booking</title>
+    <style>
+    .create-booking-form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .create-booking-container {
+        width: 400px; /* Фиксированная ширина контейнера формы */
+        padding: 20px;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card mt-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="room-info">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="create-booking-container">
+                        <h2 class="text-center">Create booking</h2>
+
+                        <div class="form-group">
+                            <label for="startDate">From:</label>
+                            <input type="date" class="form-control" id="startDate" name="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">To:</label>
+                            <input type="date" class="form-control" id="endDate" name="endDate" required>
+                        </div>
+                        <button id="create-booking-button" class="btn btn-primary mt-3">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

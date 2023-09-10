@@ -5,14 +5,19 @@ from typing import Any
 
 from jose import JWTError, jwt
 
-from src.auth.config import ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET
+from src.auth.config import (ACCESS_TOKEN_SECRET, EMAIL_CODE_SEND_RATE_LIMIT,
+                             REFRESH_TOKEN_SECRET)
 from src.auth.exceptions import (BadCredentialsException, BadTokenException,
-                                 UserForRecoveryNotFound,
+                                 EmailRateLimit, InvalidEmailCode,
+                                 UserForEmailCodeNotFound,
                                  UserNotActiveException)
 from src.auth.jwt import TokenType, create_tokens
 from src.auth.models import CodeTypes, VerificationCode
-from src.auth.repositories import VerificationCodeRepository
+from src.auth.repositories import (EmailCodeSentRepository,
+                                   VerificationCodeRepository)
+from src.auth.schemas import ActivateUserData, RecoveryUserData
 from src.celery.tasks.emails import send_activation_email, send_recovery_email
+from src.users.exceptions import PasswordValidationError
 from src.users.models import User
 from src.users.schemas import UserCreate
 from src.users.services import RegisterService, UserService
@@ -24,6 +29,7 @@ debugger = logging.getLogger('debugger')
 class AuthService:
     user_service: UserService
     verification_code_repository: VerificationCodeRepository
+    email_code_repository: EmailCodeSentRepository
 
     @staticmethod
     def _parse_token(  # noqa: FNE008
@@ -106,11 +112,18 @@ class AuthService:
     async def _find_or_create_code(self, email: str, code_type: CodeTypes) -> VerificationCode:
         user = await self.user_service.get_user_by_email(email=email)
         if not user:
-            raise UserForRecoveryNotFound
+            raise UserForEmailCodeNotFound
+
+        email_code_instance = await self.email_code_repository.get_email_rate_limit_model(email, code_type)
+
+        if not email_code_instance.can_send_new_code(EMAIL_CODE_SEND_RATE_LIMIT):
+            raise EmailRateLimit
+
+        await self.email_code_repository.update_last_sent(email_code_instance)
 
         code = await self.verification_code_repository.check_code_exists(user.id, code_type)
         if not code:
-            code = await self.verification_code_repository.generate_verification_code(user.id, CodeTypes.ACTIVATION)
+            code = await self.verification_code_repository.generate_verification_code(user.id, code_type)
 
         return code
 
@@ -121,3 +134,31 @@ class AuthService:
     async def send_activation_email(self, email: str):
         code = await self._find_or_create_code(email, CodeTypes.ACTIVATION)
         send_activation_email.delay(email=email, code=code.code)
+
+    async def recovery_user(self, recovery_data: RecoveryUserData):
+        code = await self.verification_code_repository.get_valid_code(recovery_data.code)
+
+        if not code or code.code_type != CodeTypes.RECOVERY:
+            raise InvalidEmailCode
+        user = await self.user_service.get_user_by_id(code.user_id)
+
+        if await RegisterService.check_password_hash(recovery_data.new_password, user.password):
+            raise PasswordValidationError('You cannot use your current password as the new password')
+        await RegisterService.password_validator(user.username, user.email, recovery_data.new_password)
+
+        user.password = await RegisterService.make_password_hash(recovery_data.new_password)
+        await self.user_service.repository.update(user, commit=True)
+
+        self.verification_code_repository.delete(code)
+
+    async def activate_user(self, activate_data: ActivateUserData):
+        code = await self.verification_code_repository.get_valid_code(activate_data.code)
+
+        if not code or code.code_type != CodeTypes.ACTIVATION:
+            raise InvalidEmailCode
+
+        user = await self.user_service.get_user_by_id(code.user_id)
+        user.is_active = True
+        await self.user_service.repository.update(user, commit=True)
+
+        self.verification_code_repository.delete(code)

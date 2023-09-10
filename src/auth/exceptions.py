@@ -1,6 +1,7 @@
 from fastapi import WebSocketException, status
 
-from src.base.exceptions import NotFound, Unauthorized
+from src.base.exceptions import (BadRequest, NotFound, TooManyRequests,
+                                 Unauthorized)
 
 
 class BadCredentialsException(Unauthorized):
@@ -17,12 +18,29 @@ class BadTokenException(Unauthorized):
     headers = {'WWW-Authenticate': 'Bearer'}
 
 
-class UserForRecoveryNotFound(NotFound):
+class UserForEmailCodeNotFound(NotFound):
+    """Used if user with this email not found when creating request to send
+    email code."""
+
     detail = 'User with this email not found'
 
 
 class UserNotActiveException(Unauthorized):
+    """Used if user is not active and trying to authenticate."""
+
     detail = 'Please check your email to activate your account'
+
+
+class InvalidEmailCode(BadRequest):
+    """Used if email code is invalid or expired."""
+
+    detail = 'Code you provided is expired or incorrect'
+
+
+class EmailRateLimit(TooManyRequests):
+    """User already got an email with this type of code."""
+
+    detail = 'Email rate limit exceeded. Please try again later'
 
 
 class WebSocketBadTokenException(WebSocketException):

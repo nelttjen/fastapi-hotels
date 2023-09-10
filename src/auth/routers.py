@@ -1,11 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.auth.config import oauth2_scheme
 from src.auth.dependencies import get_auth_service
-from src.auth.schemas import EmailCodeRequestData, RefreshToken, UserReadTokens
+from src.auth.schemas import (ActivateUserData, EmailCodeRequestData,
+                              RecoveryUserData, RefreshToken, UserReadTokens)
 from src.auth.services import AuthService
 from src.base.schemas import DetailModel, SuccessModel
 from src.users.schemas import UserCreate
@@ -27,9 +28,12 @@ auth_router = APIRouter(
     },
 )
 async def token(
+    response: Response,
     auth_credentials: Annotated[OAuth2PasswordRequestForm, Depends()],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ):
+    response.set_cookie('test_cookie', 'test_value')
+
     return await auth_service.authenticate_user(
         username=auth_credentials.username,
         password=auth_credentials.password,
@@ -129,4 +133,42 @@ async def send_activate_code_to_email(
         auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ):
     await auth_service.send_activation_email(email=email_code_data.email)
+    return SuccessModel(success=True)
+
+
+@auth_router.put(
+    path='/recovery',
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessModel,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            'model': DetailModel,
+            'description': '',
+        },
+    },
+)
+async def recovery_user(
+        recovery_data: RecoveryUserData,
+        auth_service: Annotated[AuthService, Depends(get_auth_service)],
+):
+    await auth_service.recovery_user(recovery_data)
+    return SuccessModel(success=True)
+
+
+@auth_router.put(
+    path='/activate',
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessModel,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            'model': DetailModel,
+            'description': '',
+        },
+    },
+)
+async def activate_user(
+        activate_data: ActivateUserData,
+        auth_service: Annotated[AuthService, Depends(get_auth_service)],
+):
+    await auth_service.activate_user(activate_data)
     return SuccessModel(success=True)

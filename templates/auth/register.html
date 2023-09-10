@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'app_base.html' %}
 
 {% block head %}
 	<title>Регистрация</title>
@@ -23,26 +23,27 @@
 {% block content %}
 <div class="register-form">
     <div class="col-md-6 offset-md-3">
-        <h2 class="text-center">Регистрация</h2>
         <div class="register-container">
+        <h2 class="text-center">Register</h2>
+
             <div class="mb-3">
-                <label for="username" class="form-label">Логин</label>
+                <label for="username" class="form-label">Username</label>
                 <input type="text" class="form-control" id="username" name="username" required>
             </div>
             <div class="mb-3">
-                <label for="email" class="form-label">Почта</label>
+                <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control" id="email" name="email" required>
             </div>
             <div class="mb-3">
-                <label for="password" class="form-label">Пароль</label>
+                <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
             <div class="mb-3">
-                <label for="confirm_password" class="form-label">Повторите пароль</label>
+                <label for="confirm_password" class="form-label">Repeat password</label>
                 <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
             </div>
-             <p>Уже есть аккаунт? <a href="/auth/login/">Войти</a></p>
-            <button id="register-button" class="btn btn-primary">Зарегистрироваться</button>
+             <p>Already have an account? <a href="/auth/login/">Log in</a></p>
+            <button id="register-button" class="btn btn-primary">Register</button>
         </div>
     </div>
 </div>
