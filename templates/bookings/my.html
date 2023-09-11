@@ -1,9 +1,40 @@
-{% extends 'base.html' %}
+{% extends 'app_base.html' %}
 
 {% block head %}
     <script src="/static/js/bookings/my.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <style>
+        .sort-asc::after {
+            content: " ▲";
+        }
+
+        .sort-desc::after {
+            content: " ▼";
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
+{#    <div class="my-bookings-list">#}
+{#        #}
+{#    </div>#}
+    <div class="container mt-4">
+        <h1>Список бронирований</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="cursor: pointer; user-select: none;" data-column="hotel">Hotel</th>
+                    <th style="cursor: pointer; user-select: none;" data-column="room">Room</th>
+                    <th style="cursor: pointer; user-select: none;" data-column="from">From</th>
+                    <th style="cursor: pointer; user-select: none;" data-column="to">To</th>
+                    <th style="cursor: pointer; user-select: none;" data-column="price">Price</th>
+                    <th style="cursor: pointer; user-select: none;" data-column="days">Days</th>
+                </tr>
+            </thead>
+            <tbody class="my-bookings-list">
+
+            </tbody>
+        </table>
+    </div>
 
 {% endblock %}

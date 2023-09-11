@@ -17,13 +17,16 @@ class DateRangeModel(BaseModel):
             raise BadRequest('Date to must be later than date from')
 
 
-class HotelInfo(BaseORMModel):
+class HotelBase(BaseORMModel):
     id: int  # noqa
     name: str
     location: str
-    rooms_count: int
     image_id: int
     services: List[str]
+
+
+class HotelInfo(HotelBase):
+    rooms_count: int
 
 
 class HotelWithRoomsLeft(HotelInfo):
@@ -44,3 +47,7 @@ class HotelRoomDetailedInfo(HotelRoomInfo):
     quantity: int
     total_cost: int
     rooms_left: int
+
+
+class HotelRoomInfoWithHotel(HotelRoomInfo):
+    hotel: HotelBase

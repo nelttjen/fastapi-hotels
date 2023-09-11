@@ -1,5 +1,6 @@
 import datetime
 import logging
+from collections.abc import Sequence
 from typing import List, Optional, Type
 
 from sqlalchemy import RowMapping, and_, func, or_, select
@@ -112,16 +113,21 @@ class HotelRepository(BaseRepository[Hotel | Room]):
         res = await self.session.execute(stmt)
         return res.mappings().first()
 
-    async def get_hotel_rooms_available(
-            self, hotel_id: int, date_from: datetime.date, date_to: datetime.date,
-    ):
+    async def get_hotel_rooms_info(
+            self, hotel_id: int, date_from: datetime.date, date_to: datetime.date, room_id: Optional[int],
+    ) -> Sequence[RowMapping] | RowMapping | None:
         clauses = await BookingRepository.get_booked_rooms_clauses(date_from, date_to)
         booked_rooms = select(
             Room.id.label('room_id'),
             func.coalesce(func.count(Booking.id), 0).label('rooms_booked'),
         ).select_from(Room).join(
             Booking, Booking.room_id == Room.id, isouter=True,
-        ).where(and_(Room.hotel_id == hotel_id, or_(*clauses))).group_by(Room.id).cte('booked_rooms')
+        ).where(and_(Room.hotel_id == hotel_id, or_(*clauses))).group_by(Room.id)
+
+        if room_id:
+            booked_rooms = booked_rooms.where(Room.id == room_id)
+
+        booked_rooms = booked_rooms.cte('booked_rooms')
 
         rooms = select(
             Room.__table__.columns,  # noqa
@@ -131,7 +137,13 @@ class HotelRepository(BaseRepository[Hotel | Room]):
             booked_rooms, booked_rooms.c.room_id == Room.id, isouter=True,
         ).where(Room.hotel_id == hotel_id)
 
+        if room_id:
+            rooms = rooms.where(Room.id == room_id)
+
         result = await self.session.execute(rooms)
+
+        if room_id:
+            return result.mappings().first()
 
         return result.mappings().all()
 

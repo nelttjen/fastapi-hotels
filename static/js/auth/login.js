@@ -1,5 +1,3 @@
-
-
 $(document).ready(function() {
     $('#login-button').click(function(event) {
         event.preventDefault();
@@ -22,6 +20,7 @@ $(document).ready(function() {
 
 
                     alert('Login successful! Access token and refresh token set as cookies.');
+                    window.location.href = '/bookings/my';
                 } else {
                     alert('Server did not return access token.');
                 }

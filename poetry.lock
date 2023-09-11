@@ -2283,6 +2283,24 @@ files = [
 ]
 
 [[package]]
+name = "sqladmin"
+version = "0.14.1"
+description = "SQLAlchemy admin for FastAPI and Starlette"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "sqladmin-0.14.1-py3-none-any.whl", hash = "sha256:aa4c802151b28f0cc4953af475647dcaecb7ba817115451e75a02f71f0af08dc"},
+    {file = "sqladmin-0.14.1.tar.gz", hash = "sha256:e1953452b4e49b57164de8fc8bd8081af7f66eb497edbe19f5aae4c9b5e84f2d"},
+]
+
+[package.dependencies]
+jinja2 = "*"
+python-multipart = "*"
+sqlalchemy = ">=1.4"
+starlette = "*"
+wtforms = ">=3,<4"
+
+[[package]]
 name = "sqlalchemy"
 version = "2.0.20"
 description = "Database Abstraction Library"
@@ -2729,6 +2747,23 @@ files = [
 test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
 
 [[package]]
+name = "wtforms"
+version = "3.0.1"
+description = "Form validation and rendering for Python web development."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "WTForms-3.0.1-py3-none-any.whl", hash = "sha256:837f2f0e0ca79481b92884962b914eba4e72b7a2daaf1f939c890ed0124b834b"},
+    {file = "WTForms-3.0.1.tar.gz", hash = "sha256:6b351bbb12dd58af57ffef05bc78425d08d1914e0fd68ee14143b7ade023c5bc"},
+]
+
+[package.dependencies]
+MarkupSafe = "*"
+
+[package.extras]
+email = ["email-validator"]
+
+[[package]]
 name = "yarl"
 version = "1.9.2"
 description = "Yet another URL library"
@@ -2818,4 +2853,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "285338aaa111e31f565f5b034d4f39ae26282cec2befcaf3f935631e65e5b07f"
+content-hash = "19a779a1ca3095b2672d89eaaea887758a0f9454b9e32aa4768bdba27392beda"

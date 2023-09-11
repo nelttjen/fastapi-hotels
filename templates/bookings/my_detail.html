@@ -1,0 +1,37 @@
+{% extends 'app_base.html' %}
+
+{% block head %}
+    <script src="/static/js/bookings/my_detail.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="card">
+            <img src="" class="card-img-top" alt="Room image" id="room-image">
+            <div class="card-body">
+                <h3 class="card-title" id="roomName"></h3>
+                <p class="card-text" id="roomDescription"></p>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item" id="dateFrom">Date from: </li>
+                <li class="list-group-item" id="dateTo">Date to: </li>
+                <li class="list-group-item" id="totalCost">Total cost: </li>
+                <li class="list-group-item" id="totalDays">Total days: </li>
+            </ul>
+            <div style="display: flex;">
+                <a href="/bookings/my" class="btn btn-primary">Go back</a>
+                <button type="button" class="btn btn-danger" id="deleteButton">Delete</button>
+            </div>
+        </div>
+        <div class="card">
+             <div class="card-body">
+                <img src="" class="card-img-top" alt="Hotel image" id="hotel-image">
+                <h3 class="card-title">Hotel information:</h3>
+                <p class="card-text" id="hotelName"></p>
+                <p class="card-text" id="hotelLocation">Location: </p>
+                <p class="card-text" id="hotelServices">Services: </p>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

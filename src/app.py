@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
@@ -73,9 +74,15 @@ app.add_middleware(
 )
 
 
+@app.route('/')
+async def root(*args, **kwargs):
+    return RedirectResponse('/hotels/search')
+
+
 @app.on_event('startup')
 async def startup_event():
     init_loggers()
+    from src.admin import admin  # noqa
 
     FastAPICache.init(
         backend=RedisBackend(

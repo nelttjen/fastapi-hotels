@@ -22,3 +22,9 @@ class User(DatabaseModel):
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default='FALSE',
     )
+    is_staff: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default='FALSE',
+    )
+    is_superuser: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default='FALSE',
+    )

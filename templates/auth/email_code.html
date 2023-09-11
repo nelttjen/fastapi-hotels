@@ -1,0 +1,48 @@
+{% extends 'app_base.html' %}
+{% block head %}
+    <title>
+    {% if request_type == "activate" %}
+    Account activation
+    {% else %}
+    Reset password
+    {% endif %}
+    </title>
+    <script src="/static/js/auth/email_code.js"></script>
+    <style>
+    .email-form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .email-container {
+        max-width: 400px;
+        padding: 20px;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+	<div class="email-form">
+        <div class="col-md-6 offset-md-3">
+            <div class="email-container">
+                <input type="hidden" id="code-type" value="{{ request_type }}">
+                {% if request_type == "activate" %}
+                <h2 class="text-center">Account activation</h2>
+                {% elif request_type == "recovery" %}
+                <h2 class="text-center">Reset password</h2>
+                {% endif %}
+                <div class="email-code-content">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Account email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <button id="email-button" class="btn btn-primary">Send code</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

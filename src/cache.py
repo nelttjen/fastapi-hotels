@@ -55,14 +55,17 @@ class KeyBuilderCache:
 
     @staticmethod
     async def clear_cache_for_func(
-            func: Callable,
+            func: Callable | str,
     ):
         """Clear the cache for the given function.
 
         :param func: The function to clear the cache for.
         """
+
+        func_name = func.__name__ if callable(func) else func
+
         prefix = FastAPICache.get_prefix()
-        pattern = f'{prefix}:clearable-{func.__name__}:*'
+        pattern = f'{prefix}:clearable-{func_name}:*'
         logger.debug(f'clear_cache_for_func: {pattern}')
         keys = await redis.keys(pattern)
         result = 0

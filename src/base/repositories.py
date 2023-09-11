@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import Generic, Iterable, Optional, Tuple, Type, TypeVar
 
 from bson import ObjectId
-from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.database import Database
 from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
@@ -13,7 +12,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.base.exceptions import HTTP_EXC, InternalServerError
 from src.base.models import MongoModel
-from src.config import mongo_settings
 from src.database import DatabaseModel
 
 T = TypeVar('T', bound=DatabaseModel)
@@ -98,26 +96,19 @@ class Transaction:
 
 @dataclass
 class AbstractMongoRepository(ABC, Generic[MT]):
-    database: Database = None
+    database: Database
 
     class Meta:
         bind_model: Type[MT]
 
-    def __init__(self):
-        super(AbstractMongoRepository, self).__init__()
-        self.__pydantic_model: Type[MT] = self.Meta.bind_model if hasattr(self.Meta, 'bind_model') else None
-
-    def connect_db(self, authparams: dict = mongo_settings.MONGODB_AUTHPARAMS):
-        self.database = MongoClient(**authparams).get_database(mongo_settings.MONGODB_DB)
-
     def get_collection(self) -> Collection:
         if self.database is None:
             raise RuntimeError('Database is not initialized')
-        if self.__pydantic_model is None:
+        if self.Meta.bind_model is None:
             raise RuntimeError('Model is not binded to repository in Meta class')
-        if self.__pydantic_model.Meta.__collection__ is None:
-            raise RuntimeError(f'Collection is not defined in Meta class in model {self.__pydantic_model.__name__}')
-        return self.database.get_collection(self.__pydantic_model.Meta.__collection__)
+        if self.Meta.bind_model.Meta.__collection__ is None:
+            raise RuntimeError(f'Collection is not defined in Meta class in model {self.Meta.bind_model.__name__}')
+        return self.database.get_collection(self.Meta.bind_model.Meta.__collection__)
 
     @staticmethod
     def _check_object_id(_id: ObjectId | str) -> ObjectId:
@@ -165,12 +156,11 @@ class AbstractMongoRepository(ABC, Generic[MT]):
         result = self.get_collection().find_one(kwargs)
         if not result:
             return
-        validated = self.__pydantic_model.model_validate(result)
+        validated = self.Meta.bind_model.model_validate(result)
         return validated
 
     def find_all(
             self,
-            model: Type[MT],
             query: dict,
             skip: Optional[int] = None,
             limit: Optional[int] = None,
@@ -189,4 +179,4 @@ class AbstractMongoRepository(ABC, Generic[MT]):
         if sort:
             cursor.sort(sort)
 
-        return map(lambda x: model.model_validate(x), cursor)
+        return map(lambda x: self.Meta.bind_model.model_validate(x), cursor)

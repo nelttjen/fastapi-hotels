@@ -13,6 +13,8 @@ $(document).ready(function() {
         date_to = new Date().toISOString().split('T')[0]
     }
 
+    let date_args = '?date_from=' + date_from + '&date_to=' + date_to
+
     $.ajax({
         url: "/api/v1/hotels/" + hotel_id,
         method: "GET",
@@ -23,17 +25,18 @@ $(document).ready(function() {
                     services += `<li>${data.services[i]}</li>`
                 }
             } else {
-                services = '<li>Нет дополнительных услуг</li>'
+                services = '<li>No information about services</li>'
             }
             let html = `
             <div class="container mt-5">
                 <div class="card">
-                    <img class="hotel-image" src="/static/images/resized/1920_1080/resized_1920_1080_${data.image_id}.webp" alt="Изображение отеля" style="max-width: 1800px; max-height: 900px;">
+                    <img class="hotel-image" src="/static/images/resized/1920_1080/resized_1920_1080_${data.image_id}.webp" alt="Hotel image" style="max-width: 1800px; max-height: 900px;">
                     <div class="card-body">
                         <h1 class="hotel-name">${data.name}</h1>
                         <p class="hotel-location">${data.location}</p>
-                        <p class="hotel-rooms">Всего комнат: ${data.rooms_count}</p>
+                        <p class="hotel-rooms">Rooms count: ${data.rooms_count}</p>
                         <ul class="hotel-services">
+                            Hotel services
                             ${services}
                         </ul>
                     </div>
@@ -43,11 +46,11 @@ $(document).ready(function() {
             $(".hotel-info").html(html)
         },
         error: function (data) {
-            alert('failed to get hotel info')
+            alert('failed to get the hotel information')
         }
     })
     $.ajax({
-        url: "/api/v1/rooms/" + hotel_id + '?date_from=' + date_from + '&date_to=' + date_to,
+        url: "/api/v1/rooms/" + hotel_id + date_args,
         method: "GET",
         success: function(data) {
             let cards = [];
@@ -58,31 +61,31 @@ $(document).ready(function() {
                         services += `<li>${room.services[i]}</li>`
                     }
                 } else {
-                    services = '<li>Нет дополнительных услуг</li>'
+                    services = '<li>No information about services</li>'
                 }
                 let button = ''
                 if (room.rooms_left > 0) {
-                    button = `<button class="btn btn-primary">Забронировать</button>`
+                    button = `<a class="btn btn-primary" href="/bookings/create${date_args}&room_id=${room.id}&hotel_id=${hotel_id}">Choose</a>`
                 } else {
-                    button = `<button class="btn btn-danger disabled">Нет свободных комнат</button>`
+                    button = `<a class="btn btn-danger disabled">No rooms available</a>`
                 }
 
                 let card = `
                 <div class="card">
                     <div class="row no-gutters">
                         <div class="col-md-4">
-                            <img class="card-img" src="/static/images/resized/1024_562/resized_1024_562_${room.image_id}.webp" alt="Изображение комнаты" style="width: 400px; height: 200px;">
+                            <img class="card-img" src="/static/images/resized/1024_562/resized_1024_562_${room.image_id}.webp" alt="Room image" style="width: 400px; height: 200px;">
                         </div>
                         <div class="col-md-8">
                             <div class="card-body">
-                                <h5 class="card-title">Название: ${room.name}</h5>
-                                <p class="card-text">Описание: ${room.description}</p>
-                                <p class="card-text">Цена: ${room.price}р за ночь</p>
-                                <p class="card-text">Стоимость брони: ${room.total_cost}р за ${getDateDaysDifference(date_from, date_to)} дней</p>
-                                <p class="card-text">Количество комнат: ${room.quantity}</p>
-                                <p class="card-text">Комнат осталось: ${room.rooms_left}</p>
+                                <h5 class="card-title">${room.name}</h5>
+                                <p class="card-text">Description: ${room.description}</p>
+                                <p class="card-text">Price: ${room.price}р per night</p>
+                                <p class="card-text">Booking cost: ${room.total_cost}р за ${getDateDaysDifference(date_from, date_to)} дней</p>
+                                <p class="card-text">Rooms count: ${room.quantity}</p>
+                                <p class="card-text">Rooms left: ${room.rooms_left}</p>
                                 <p class="card-text">
-                                    Услуги в номере
+                                    Room services
                                     <ul class="list-group">
                                         ${services}
                                     </ul>
@@ -101,7 +104,7 @@ $(document).ready(function() {
             $('.rooms-list').html(cards.join('<br>'))
         },
         error: function(data) {
-            alert('failed to get rooms for this hotel')
+            alert('failed to get the rooms information for this hotel')
         }
     });
 })
