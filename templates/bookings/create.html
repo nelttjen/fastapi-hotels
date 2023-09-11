@@ -32,7 +32,11 @@
                 <div class="col-md-6">
                     <div class="create-booking-container">
                         <h2 class="text-center">Create booking</h2>
+                        <input type="hidden" id="room_id" value="{{ room_id }}">
+                        <input type="hidden" id="hotel_id" value="{{ hotel_id }}">
+                        <ul class="list-group pydantic-errors">
 
+                        </ul>
                         <div class="form-group">
                             <label for="startDate">From:</label>
                             <input type="date" class="form-control" id="startDate" name="startDate" required>

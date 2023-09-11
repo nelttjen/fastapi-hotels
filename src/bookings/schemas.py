@@ -3,7 +3,7 @@ import datetime
 from pydantic import field_validator
 
 from src.base.schemas import BaseORMModel
-from src.hotels.schemas import DateRangeModel, HotelRoomInfo
+from src.hotels.schemas import DateRangeModel, HotelRoomInfoWithHotel
 
 
 class BookingCreateData(DateRangeModel):
@@ -18,7 +18,7 @@ class BookingCreateData(DateRangeModel):
 
 class BookingDetail(BaseORMModel):
     id: int  # noqa
-    room: HotelRoomInfo
+    room: HotelRoomInfoWithHotel
     date_from: datetime.date
     date_to: datetime.date
     price: int

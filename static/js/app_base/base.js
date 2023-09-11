@@ -1,3 +1,10 @@
+let pydanticErrors = undefined;
+let tomorrow = undefined;
+let day2fw = undefined;
+
+let defaultQueryDate = undefined;
+let authHeaders = {};
+
 function getExpireAccess(){
     return new Date(new Date().getTime() + 60 * 60 * 1000);
 }
@@ -28,51 +35,47 @@ function getCookie(cookieName) {
     return null;
 }
 
-function refreshToken() {
+async function refreshToken() {
     let refresh_token = getCookie('refresh_token');
     if (!refresh_token) {
         window.location.replace('/auth/login');
-        return {};
     }
     $.ajax({
         url: '/api/v1/auth/refresh',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({refresh_token: refresh_token}),
-        success: function(data) {
+        success: async function(data) {
             if (data.access_token && data.refresh_token) {
                 setCookie('access_token', data.access_token, getExpireAccess());
                 setCookie('refresh_token', data.refresh_token, getExpireRefresh());
-                setCookie('user', data.user, getExpireRefresh());
-                return {'Authorization': `Bearer ${data.access_token}`}
+                setCookie('user', JSON.stringify(data.user), getExpireRefresh());
+                authHeaders = {'Authorization': `Bearer ${data.access_token}`}
             } else {
                 window.location.replace('/auth/login');
-                return {};
             }
         },
-        error: function(data) {
+        error: async function(data) {
             window.location.replace('/auth/login');
-            return {};
         }
     });
 }
 
-function validateToken() {
+async function validateToken() {
     let access_token = getCookie('access_token');
     if (!access_token) {
-        return refreshToken();
+        return await refreshToken();
     }
 
-    let headers = {'Authorization': `Bearer ${access_token}`}
+    authHeaders = {'Authorization': `Bearer ${access_token}`}
     $.ajax({
         url: '/api/v1/auth/validate',
         type: 'POST',
-        headers: headers,
-        error: function(data) {
-            return refreshToken();
+        headers: authHeaders,
+        error: async function(data) {
+            return await refreshToken();
         }
     })
-    return headers;
 }
 
 function getDateDaysDifference(dateFrom, dateTo) {
@@ -117,6 +120,36 @@ function formatHeader() {
     }
 }
 
+function displayPydanticErrors(errors) {
+    if (!pydanticErrors) {
+        return;
+    }
+
+    let lis = ``
+    errors.forEach(function(error) {
+        lis += `
+        <li class="list-group-item" style="color: red;">
+        <p>${error.type}:</p> <p>${error.msg}</p> <p>(location: ${error.loc.join(' - ')})</p>
+        </li>
+        `
+    });
+    pydanticErrors.empty();
+    pydanticErrors.html(lis);
+}
+
 $(document).ready(function() {
     formatHeader();
-})
+
+    pydanticErrors = $('.pydantic-errors');
+
+    tomorrow = new Date();
+    day2fw = new Date();
+
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    day2fw.setDate(day2fw.getDate() + 2);
+
+    defaultQueryDate = "?date_from=";
+    defaultQueryDate += tomorrow.toJSON().split('T')[0];
+    defaultQueryDate += "&date_to=";
+    defaultQueryDate += day2fw.toJSON().split('T')[0];
+});

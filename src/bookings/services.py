@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Optional
 
 from src.base.exceptions import Forbidden
 from src.base.repositories import Transaction
@@ -33,8 +34,10 @@ class BookingService:
             result = await self.repository.add_booking(booking)
         return result
 
-    async def get_my_bookings(self, user_id: int) -> Sequence[Booking]:
-        return await self.repository.get_my_bookings(user_id)
+    async def get_my_bookings(
+            self, user_id: int, booking_id: Optional[int] = None,
+    ) -> Sequence[Booking] | Booking:
+        return await self.repository.get_my_bookings(user_id, booking_id)
 
     async def delete_booking(
             self, user_id: int, booking_id: int,

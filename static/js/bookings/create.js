@@ -1,4 +1,5 @@
-$(document).ready(function() {
+$(document).ready(async function() {
+    await validateToken();
     const queryParams = new URLSearchParams(window.location.search);
 
     let date_from = queryParams.get("date_from")
@@ -6,14 +7,15 @@ $(document).ready(function() {
     let roomId = queryParams.get("room_id")
     let hotelId = queryParams.get("hotel_id")
 
-    let today = new Date()
     let tomorrow = new Date()
+    let day2fw = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1);
+    day2fw.setDate(day2fw.getDate() + 2);
     $('#startDate').prop('min', function(){
-        return today.toJSON().split('T')[0];
+        return tomorrow.toJSON().split('T')[0];
     });
     $('#endDate').prop('min', function(){
-        return tomorrow.toJSON().split('T')[0];
+        return day2fw.toJSON().split('T')[0];
     });
     if (date_from) {
         $('#startDate').val(date_from);
@@ -24,9 +26,9 @@ $(document).ready(function() {
 
     let queryDate = "";
     queryDate += "?date_from=";
-    queryDate += date_from ? date_from : today.toJSON().split('T')[0];
+    queryDate += date_from ? date_from : tomorrow.toJSON().split('T')[0];
     queryDate += "&date_to=";
-    queryDate += date_to ? date_to : tomorrow.toJSON().split('T')[0];
+    queryDate += date_to ? date_to : day2fw.toJSON().split('T')[0];
 
     $.ajax({
         method: "GET",
@@ -70,8 +72,37 @@ $(document).ready(function() {
         e.preventDefault();
         let date_from = $('#startDate').val();
         let date_to = $('#endDate').val();
-        let roomId = $('#room-id').val();
-        let hotelId = $('#hotel-id').val();
+        let roomId = $('#room_id').val();
 
+        let payload = {
+            date_from: date_from,
+            date_to: date_to,
+            room_id: roomId,
+        };
+        $.ajax({
+            method: "POST",
+            url: `/api/v1/bookings/create`,
+            data: JSON.stringify(payload),
+            contentType: "application/json",
+            headers: authHeaders,
+            success: function(data) {
+                let form = $('.create-booking-container');
+                form.html(`
+                <h3 style="color: green;">You have successfully booked this room from ${date_from} to ${date_to}</h3>
+                <a href="/bookings/my" class="btn btn-primary">Go to my bookings</a>
+                `)
+            },
+            error: function(data) {
+                if (data.status === 422) {
+                    displayPydanticErrors(data.responseJSON.detail);
+                } else {
+                    let form = $('.create-booking-container');
+                    form.html(`
+                    <h3 style="color: red;">${data.responseJSON.detail}</h3>
+                    <a href="/hotels/${hotelId}/rooms${queryDate}" class="btn btn-primary">Go back</a>
+                    `)
+                }
+            }
+        });
     })
 });

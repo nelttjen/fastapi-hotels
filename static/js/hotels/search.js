@@ -1,13 +1,10 @@
 $(document).ready(function() {
     $(function(){
-        let today = new Date()
-        let tomorrow = new Date()
-        tomorrow.setDate(tomorrow.getDate() + 1);
         $('#startDate').prop('min', function(){
-            return today.toJSON().split('T')[0];
+            return tomorrow.toJSON().split('T')[0];
         });
         $('#endDate').prop('min', function(){
-            return tomorrow.toJSON().split('T')[0];
+            return day2fw.toJSON().split('T')[0];
         });
     });
     $("#search-button").click(function(event) {

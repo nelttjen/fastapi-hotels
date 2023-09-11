@@ -2,6 +2,7 @@ import datetime
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Optional
 
 from sqlalchemy import and_, func, or_, select
 
@@ -9,7 +10,6 @@ from src.base.exceptions import NotFound
 from src.base.repositories import BaseRepository
 from src.bookings.exceptions import NoRoomsAvailable
 from src.bookings.models import Booking
-from src.database import engine
 from src.hotels.models import Room
 
 logger = logging.getLogger('all')
@@ -50,16 +50,20 @@ class BookingRepository(BaseRepository[Booking]):
             booked_rooms, Room.id == booked_rooms.c.room_id, isouter=True,
         ).where(Room.id == room_id).group_by(Room.quantity, booked_rooms.c.room_id)
 
-        logger.debug(rooms_left.compile(engine, compile_kwargs={'literal_binds': True}))
-
         result = await self.session.scalar(rooms_left)
         if result <= 0:
             if result < 0:
                 logger.warning(f'Rooms has less than 0 available, {result}')
             raise NoRoomsAvailable
 
-    async def get_my_bookings(self, user_id: int) -> Sequence[Booking]:
-        stmt = select(Booking).where(Booking.user_id == user_id).order_by(Booking.id.desc())
+    async def get_my_bookings(
+            self, user_id: int, booking_id: Optional[int] = None,
+    ) -> Sequence[Booking] | Booking:
+        stmt = select(Booking).where(Booking.user_id == user_id)
+
+        if booking_id:
+            stmt = stmt.where(Booking.id == booking_id)
+            return await self.session.scalar(stmt)
 
         result = await self.session.scalars(stmt)
         return result.all()
