@@ -35,3 +35,12 @@ class HotelService:
             self, hotel_id: int, date_from: datetime.date, date_to: datetime.date, room_id: Optional[int] = None,
     ) -> Sequence[RowMapping]:
         return await self.repository.get_hotel_rooms_info(hotel_id, date_from, date_to, room_id=room_id)
+
+    async def get_my_favourite_hotels(self, user_id: int) -> Sequence[RowMapping]:
+        return await self.repository.get_my_favourite_hotels(user_id)
+
+    async def add_favourite_hotel(self, user_id: int, hotel_id: int) -> bool:
+        return await self.repository.add_favourite_hotel(user_id, hotel_id)
+
+    async def remove_favourite_hotel(self, user_id: int, hotel_id) -> None:
+        await self.repository.remove_favourite_hotel(user_id, hotel_id)

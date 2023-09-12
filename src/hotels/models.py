@@ -2,7 +2,7 @@ from os import PathLike
 from pathlib import Path
 from typing import List
 
-from sqlalchemy import JSON, ForeignKey, Integer, String
+from sqlalchemy import JSON, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -92,3 +92,20 @@ class Room(AsyncAttrs, DatabaseModel):
             '1024x562': IMAGES_URL / 'resized/1024_562' / ('resized_1024_562' + filename),
             '200x100': IMAGES_URL / 'resized/200_100' / ('resized_200_100' + filename),
         }
+
+
+class FavouriteHotel(DatabaseModel):
+    __tablename__ = 'favourite_hotel'
+    __table_args__ = (
+        UniqueConstraint('user_id', 'hotel_id', name='unique_user_hotel_fav_constraint'),
+    )
+
+    id: Mapped[int] = mapped_column(  # noqa
+        Integer, primary_key=True, index=True, autoincrement=True,
+    )
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey('user.id', ondelete='CASCADE'), nullable=False,
+    )
+    hotel_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey('hotel.id', ondelete='CASCADE'), nullable=False,
+    )
