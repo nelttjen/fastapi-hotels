@@ -3,16 +3,36 @@ import logging
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
-from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-load_dotenv(BASE_DIR / '.env')
 
 
-_base_env_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
+_base_env_config = SettingsConfigDict(
+    env_file='.env' if os.environ.get('MODE') != 'TEST' else '.env-test',
+    env_file_encoding='utf-8',
+    extra='ignore',
+)
+
+
+class AppSettings(BaseSettings):
+    MODE: Literal['DEV', 'TEST', 'PROD']
+    DEBUG: bool
+    ENABLE_QUERY_DEBUGGING: bool
+    SECRET_KEY: str
+
+    model_config = _base_env_config.copy()
+
+    def validate_settings(self) -> None:
+        if self.MODE == 'PROD':
+            self.DEBUG = False
+            self.ENABLE_QUERY_DEBUGGING = False
+
+
+app_settings = AppSettings()
+app_settings.validate_settings()
 
 
 class DatabaseSettings(BaseSettings):
@@ -24,10 +44,11 @@ class DatabaseSettings(BaseSettings):
 
     @property
     def DATABASE_URL(self) -> str:  # noqa
+        db = self.POSTGRES_DB if app_settings != 'TEST' else ('test_' + self.POSTGRES_DB)
         return (f'postgresql+asyncpg://'
                 f'{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@'
                 f'{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/'
-                f'{self.POSTGRES_DB}')
+                f'{db}')
 
     model_config = _base_env_config.copy()
 
@@ -80,19 +101,10 @@ class SMTPSettings(BaseSettings):
     model_config = _base_env_config.copy()
 
 
-class AppSettings(BaseSettings):
-    DEBUG: bool
-    ENABLE_QUERY_DEBUGGING: bool
-    SECRET_KEY: str
-
-    model_config = _base_env_config.copy()
-
-
 db_settings = DatabaseSettings()
 redis_settings = RedisSettings()
 mongo_settings = MongoSettings()
 google_smtp_settings = SMTPSettings()
-app_settings = AppSettings()
 
 CORS_ALLOW_ORIGINS = [
     'http://127.0.0.1:8000',

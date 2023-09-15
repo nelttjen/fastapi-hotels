@@ -1,6 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Literal
 
 from sqlalchemy import MetaData
 from sqlalchemy.event import listens_for
@@ -9,7 +9,12 @@ from sqlalchemy.orm import DeclarativeMeta, declarative_base, sessionmaker
 
 from src.config import app_settings, db_settings
 
-engine = create_async_engine(db_settings.DATABASE_URL)
+DEFAULT_ISOLATION_LEVEL: Literal['READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE'] = 'READ COMMITTED'
+
+engine = create_async_engine(
+    db_settings.DATABASE_URL,
+    isolation_level=DEFAULT_ISOLATION_LEVEL,
+)
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)  # noqa
 debugger = logging.getLogger('debugger')
 

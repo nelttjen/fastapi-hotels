@@ -27,12 +27,14 @@ class UserService:
             username: str,
             email: EmailStr,
             password: str,
+            bypass_validation: bool = False,
     ) -> User:
         async with self.transaction:
             await self.repository.credentials_available(email=email, username=username)
 
-            await RegisterService.password_validator(username=username, email=email, password=password)
-            await RegisterService.username_validator(username=username)
+            if not bypass_validation:
+                await RegisterService.password_validator(username=username, email=email, password=password)
+                await RegisterService.username_validator(username=username)
 
             hashed_password = await RegisterService.make_password_hash(password=password)
 

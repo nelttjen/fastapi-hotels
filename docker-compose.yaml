@@ -99,7 +99,7 @@ services:
     depends_on:
       - celery
     ports:
-      - "8001:443"
+      - "8080:443"
 
 volumes:
   postgres_data:

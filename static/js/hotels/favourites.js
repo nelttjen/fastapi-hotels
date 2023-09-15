@@ -1,28 +1,40 @@
-function fillTable(bookings) {
-    let tbody = $(".my-bookings-list");
-
-    bookings.forEach(function (booking) {
-        var row = $("<tr class='order-row'>");
-        row.html(`
-            <td><a href="/hotels/${booking.room.hotel_id}/rooms${defaultQueryDate}" class=".order-field" field-data="hotel">${booking.room.hotel.name}</a></td>
-            <td class=".order-field" field-data="room">${booking.room.name}</td>
-            <td class=".order-field" field-data="from">${booking.date_from}</td>
-            <td class=".order-field" field-data="to">${booking.date_to}</td>
-            <td class=".order-field" field-data="price">${booking.total_cost}</td>
-            <td class=".order-field" field-data="days">${booking.total_days}</td>
-            <td>
-            <a href="/bookings/my/${booking.id}" class="btn btn-primary">Info</a>
-            </td>
-
-        `);
-        tbody.append(row);
+function updateClick(){
+    $(".delete-favourite").click((e) => {
+        e.preventDefault();
+        let val = $(e.target).attr("hotel_id")
+        $.ajax({
+            'method': 'DELETE',
+            'url': `/api/v1/hotels/my/favourites/${val}`,
+            headers: authHeaders,
+            success: function(data) {
+                $(`.hotel-${val}`).remove();
+            }
+        })
     });
 }
 
-async function fetchBookingsData(queryParams) {
+function fillTable(hotels) {
+    let tbody = $(".my-favourites-list");
+
+    hotels.forEach(function (hotel) {
+        var row = $(`<tr class='order-row hotel-${hotel.id}'>)`);
+        row.html(`
+            <td><a href="/hotels/${hotel.id}/rooms${defaultQueryDate}" class=".order-field" field-data="hotel">${hotel.name}</a></td>
+            <td class=".order-field" field-data="location">${hotel.location}</td>
+            <td class=".order-field" field-data="rooms">${hotel.rooms_count}</td>
+            <td>
+            <btn class="btn btn-danger delete-favourite" hotel_id="${hotel.id}">D</btn>
+            </td>
+        `);
+        tbody.append(row);
+    });
+    updateClick();
+}
+
+async function fetchFavouritesData() {
     $.ajax({
         method: 'GET',
-        url: '/api/v1/bookings/my' + queryParams,
+        url: '/api/v1/hotels/my/favourites',
         headers: authHeaders,
         success: function(data) {
             fillTable(data);
@@ -37,6 +49,7 @@ async function fetchBookingsData(queryParams) {
     })
 }
 
+
 $(document).ready(async function() {
     await validateToken();
     while (!authHeaders) {
@@ -47,9 +60,8 @@ $(document).ready(async function() {
     await new Promise(resolve => {
         setTimeout(() => {resolve()}, 200);
     })
-    // alert(`logged in as ${authHeaders['Authorization']}`);
-    await fetchBookingsData("");
 
+    await fetchFavouritesData();
     const headers = document.querySelectorAll("th[data-column]");
     let currentOrder = null;
 
@@ -69,11 +81,11 @@ $(document).ready(async function() {
         let rows = $('.order-row');
         let filter = "str";
 
-        if (filterBy === "days" || filterBy === "price" || filterBy === "-price" || filterBy === "-days") {
+        if (filterBy === "rooms" || filterBy === "-rooms") {
             filter = "int";
         }
 
-        rows.sort(function(a, b) {
+        rows.sort(function (a, b) {
             let aValue = $(a).find(`[field-data="${filterBy.replace('-', '')}"]`).text();
             let bValue = $(b).find(`[field-data="${filterBy.replace('-', '')}"]`).text();
 
@@ -86,16 +98,16 @@ $(document).ready(async function() {
                     return aValue > bValue;
                 }
             } else {
-            if (filterBy.startsWith("-")) {
-                return bValue.localeCompare(aValue);
-            } else {
-                return aValue.localeCompare(bValue);
-            }
+                if (filterBy.startsWith("-")) {
+                    return bValue.localeCompare(aValue);
+                } else {
+                    return aValue.localeCompare(bValue);
+                }
             }
 
 
         });
 
-        $('.my-bookings-list').empty().append(rows);
+        $('.my-favourites-list').empty().append(rows);
     }
 });

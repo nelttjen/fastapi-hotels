@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database import DatabaseModel
 from src.hotels.models import Room
+from src.users.models import User
 
 
 class Booking(AsyncAttrs, DatabaseModel):
@@ -39,4 +40,7 @@ class Booking(AsyncAttrs, DatabaseModel):
 
     room: Room = relationship(
         'Room', lazy='joined',
+    )
+    user: User = relationship(
+        'User', lazy='joined', back_populates='bookings',
     )

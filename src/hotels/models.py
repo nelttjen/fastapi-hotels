@@ -48,6 +48,12 @@ class Hotel(DatabaseModel):
             '200x100': IMAGES_URL / 'resized/200_100' / ('resized_200_100' + filename),
         }
 
+    def __repr__(self):
+        return f'<Hotel {self.name}>'
+
+    def __str__(self):
+        return self.name
+
 
 class Room(AsyncAttrs, DatabaseModel):
     __tablename__ = 'room'
@@ -92,6 +98,12 @@ class Room(AsyncAttrs, DatabaseModel):
             '1024x562': IMAGES_URL / 'resized/1024_562' / ('resized_1024_562' + filename),
             '200x100': IMAGES_URL / 'resized/200_100' / ('resized_200_100' + filename),
         }
+
+    def __repr__(self) -> str:
+        return f'<Room {self.name}>'
+
+    def __str__(self):
+        return self.name
 
 
 class FavouriteHotel(DatabaseModel):

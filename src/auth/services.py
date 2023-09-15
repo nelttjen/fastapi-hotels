@@ -108,6 +108,7 @@ class AuthService:
             email=new_user.email,
             password=new_user.password,
         )
+        await self.send_activation_email(new_user.email)
 
     async def _find_or_create_code(self, email: str, code_type: CodeTypes) -> VerificationCode:
         user = await self.user_service.get_user_by_email(email=email)
