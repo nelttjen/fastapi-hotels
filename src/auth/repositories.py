@@ -1,7 +1,7 @@
 import datetime
 import hashlib
 
-from src.auth.config import EMAIL_CODE_EXPIRE_MINUTES
+from src.auth.config import auth_config
 from src.auth.models import CodeTypes, EmailCodeSent, VerificationCode
 from src.base.repositories import AbstractMongoRepository
 
@@ -30,7 +30,9 @@ class VerificationCodeRepository(AbstractMongoRepository[VerificationCode]):
             code=code_hash,
             code_type=code_type,
             expires=int(
-                (datetime.datetime.utcnow() + datetime.timedelta(seconds=EMAIL_CODE_EXPIRE_MINUTES)).timestamp(),
+                (datetime.datetime.utcnow() + datetime.timedelta(
+                    seconds=auth_config.EMAIL_CODE_EXPIRE_MINUTES,
+                )).timestamp(),
             ),
         )
         self.save(verification_code)

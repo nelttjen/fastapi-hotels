@@ -7,6 +7,9 @@ from typing import Any, Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# from dotenv import load_dotenv
+
+
 BASE_DIR = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 

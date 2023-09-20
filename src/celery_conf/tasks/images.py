@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from src.celery.celery import celery_app
+from src.celery_conf.celery import celery_app
 
 
 @celery_app.task

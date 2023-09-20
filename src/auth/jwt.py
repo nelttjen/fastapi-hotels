@@ -3,9 +3,7 @@ from enum import Enum
 
 from jose import jwt
 
-from src.auth.config import (ACCESS_TOKEN_EXPIRE_MINUTES, ACCESS_TOKEN_SECRET,
-                             REFRESH_TOKEN_EXPIRE_MINUTES,
-                             REFRESH_TOKEN_SECRET)
+from src.auth.config import auth_config
 from src.users.models import User
 
 
@@ -15,11 +13,11 @@ class TokenType(str, Enum):
 
 
 def _create_token(user: User, token_type: TokenType) -> str:
-    minutes = ACCESS_TOKEN_EXPIRE_MINUTES
-    secret = ACCESS_TOKEN_SECRET
+    minutes = auth_config.ACCESS_TOKEN_EXPIRE_MINUTES
+    secret = auth_config.ACCESS_TOKEN_SECRET
     if token_type == TokenType.REFRESH:
-        minutes = REFRESH_TOKEN_EXPIRE_MINUTES
-        secret = REFRESH_TOKEN_SECRET
+        minutes = auth_config.REFRESH_TOKEN_EXPIRE_MINUTES
+        secret = auth_config.REFRESH_TOKEN_SECRET
     expires = (datetime.datetime.utcnow() + datetime.timedelta(minutes=minutes)).isoformat()
 
     data = {

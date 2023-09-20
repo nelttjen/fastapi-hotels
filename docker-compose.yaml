@@ -67,7 +67,7 @@ services:
       - run
       - celery
       - -A
-      - src.celery.celery:celery_app
+      - src.celery_conf.celery:celery_app
       - worker
       - --loglevel=INFO
     env_file:

@@ -5,10 +5,9 @@ from typing import Optional, Type
 from pydantic import EmailStr
 from sqlalchemy.exc import IntegrityError
 
-from src.auth.config import pwd_context
+from src.auth.config import auth_config, pwd_context
 from src.base.exceptions import HTTP_EXC, NotFound, Unauthorized
 from src.base.repositories import Transaction
-from src.config import config
 from src.users.exceptions import (PasswordValidationError,
                                   UsernameOrEmailAlreadyExists,
                                   UsernameValidationError)
@@ -63,9 +62,10 @@ class UserService:
             if not await RegisterService.check_password_hash(update_data.old_password, user.password):
                 raise PasswordValidationError('Old password does not match')
 
-            await RegisterService.password_validator(
-                username=user.username, email=user.email, password=update_data.password,
-            )
+            if not auth_config.DISABLE_PASSWORD_VALIDATOR:
+                await RegisterService.password_validator(
+                    username=user.username, email=user.email, password=update_data.password,
+                )
             user.password = await RegisterService.make_password_hash(password=update_data.password)
 
         try:
@@ -115,9 +115,6 @@ class RegisterService:
     async def password_validator(
             username: str, email: str, password: str,
     ) -> None:
-        if config('DISABLE_PASSWORD_VALIDATOR', False, module='src.auth.config'):
-            return
-
         if username in password or email in password:
             raise PasswordValidationError('Password cannot contains username or email')
 
