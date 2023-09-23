@@ -47,11 +47,12 @@ class DatabaseSettings(BaseSettings):
 
     @property
     def DATABASE_URL(self) -> str:  # noqa
-        db = self.POSTGRES_DB if app_settings != 'TEST' else ('test_' + self.POSTGRES_DB)
-        return (f'postgresql+asyncpg://'
-                f'{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@'
-                f'{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/'
-                f'{db}')
+        return (
+            f'postgresql+asyncpg://'
+            f'{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@'
+            f'{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/'
+            f'{self.POSTGRES_DB}'
+        )
 
     model_config = _base_env_config.copy()
 

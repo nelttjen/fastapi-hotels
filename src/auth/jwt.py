@@ -1,9 +1,10 @@
-import datetime
+from datetime import timedelta
 from enum import Enum
 
 from jose import jwt
 
 from src.auth.config import auth_config
+from src.base.utils import get_utcnow
 from src.users.models import User
 
 
@@ -18,7 +19,7 @@ def _create_token(user: User, token_type: TokenType) -> str:
     if token_type == TokenType.REFRESH:
         minutes = auth_config.REFRESH_TOKEN_EXPIRE_MINUTES
         secret = auth_config.REFRESH_TOKEN_SECRET
-    expires = (datetime.datetime.utcnow() + datetime.timedelta(minutes=minutes)).isoformat()
+    expires = (get_utcnow() + timedelta(minutes=minutes)).isoformat()
 
     data = {
         'user_id': user.id,

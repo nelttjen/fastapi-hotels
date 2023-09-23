@@ -1,7 +1,7 @@
 import pytest
 
-from tests.conftest import override_settings
 from src.auth.config import auth_config
+from tests.conftest import override_settings
 
 
 @pytest.mark.parametrize(

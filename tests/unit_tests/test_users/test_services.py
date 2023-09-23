@@ -3,21 +3,15 @@ from typing import List
 
 import pytest
 from faker import Faker
-from sqlalchemy import select
 from fastapi.exceptions import HTTPException
+from sqlalchemy import select
 
 from src.auth.config import auth_config
-from src.users.dependencies import get_user_service
-from src.users.exceptions import PasswordValidationError, UsernameValidationError, UsernameOrEmailAlreadyExists
+from src.users.exceptions import PasswordValidationError, UsernameOrEmailAlreadyExists, UsernameValidationError
 from src.users.models import User
-from src.users.services import UserService, RegisterService
 from src.users.schemas import UserUpdate
+from src.users.services import RegisterService, UserService
 from tests.conftest import override_settings
-
-
-@pytest.fixture
-async def user_service(session) -> UserService:
-    return await get_user_service(session)
 
 
 class TestUserCreateUpdate:
@@ -55,18 +49,13 @@ class TestUserCreateUpdate:
         ],
     )
     async def test_create_user_password_fail(self, user_service: UserService, password: str):
-        try:
+        with pytest.raises(PasswordValidationError):
             await user_service.create_user(
                 username='username_1',
                 email='user_1@example.com',
                 password=password,
                 bypass_validation=False,
             )
-            raise AssertionError('Should have failed')
-        except PasswordValidationError:
-            """all is ok"""
-        except Exception as e:
-            raise AssertionError(e)
 
     @pytest.mark.parametrize(
         'username, email, password',
@@ -76,15 +65,12 @@ class TestUserCreateUpdate:
         ],
     )
     async def test_create_user_password_ok(self, user_service: UserService, username: str, email: str, password: str):
-        try:
-            user = await user_service.create_user(
-                username=username,
-                email=email,
-                password=password,
-                bypass_validation=False,
-            )
-        except Exception as e:
-            raise AssertionError(e)
+        user = await user_service.create_user(
+            username=username,
+            email=email,
+            password=password,
+            bypass_validation=False,
+        )
 
         stmt = select(User).where(User.username == username)
         result = await user_service.repository.session.scalar(stmt)
@@ -102,15 +88,13 @@ class TestUserCreateUpdate:
     async def test_create_user_password_bypass(
             self, user_service: UserService, username: str, email: str, password: str,
     ):
-        try:
+        with pytest.raises(PasswordValidationError):
             await user_service.create_user(
                 username=Faker().name(),
                 email=Faker().email(),
                 password=password,
                 bypass_validation=True,
             )
-        except PasswordValidationError:
-            raise AssertionError('Password should not be validated')
 
     @pytest.mark.parametrize(
         'username',
@@ -121,18 +105,13 @@ class TestUserCreateUpdate:
         ],
     )
     async def test_create_user_username_fail(self, user_service: UserService, username: str):
-        try:
+        with pytest.raises(UsernameValidationError):
             await user_service.create_user(
                 username=username,
                 email=Faker().email(),
                 password=Faker().password(),
                 bypass_validation=False,
             )
-            raise AssertionError('Should have failed')
-        except UsernameValidationError:
-            """all is ok"""
-        except Exception as e:
-            raise AssertionError(e)
 
     @pytest.mark.parametrize(
         'username, email, password',
@@ -144,18 +123,13 @@ class TestUserCreateUpdate:
     async def test_password_validation_failure_contains(
             self, user_service: UserService, username: str, email: str, password: str,
     ):
-        try:
+        with pytest.raises(PasswordValidationError):
             await user_service.create_user(
                 username=username,
                 email=email,
                 password=password,
                 bypass_validation=False,
             )
-            raise AssertionError('Should have failed')
-        except PasswordValidationError:
-            """all is ok"""
-        except Exception as e:
-            raise AssertionError(e)
 
     @pytest.mark.parametrize(
         'old_username, new_username',
@@ -218,16 +192,11 @@ class TestUserCreateUpdate:
         assert user2.username == new_username
         assert user2.id is not None
 
-        try:
+        with pytest.raises(UsernameOrEmailAlreadyExists):
             await user_service.update_user(
                 user=user2,
                 update_data=UserUpdate(username=old_username),
             )
-            raise AssertionError('Should have failed')
-        except UsernameOrEmailAlreadyExists:
-            """all is ok"""
-        except Exception as e:
-            raise AssertionError(e)
 
     @pytest.mark.parametrize(
         'old_email, new_email',
@@ -290,16 +259,11 @@ class TestUserCreateUpdate:
         assert user2.email == new_email
         assert user2.id is not None
 
-        try:
+        with pytest.raises(UsernameOrEmailAlreadyExists):
             await user_service.update_user(
                 user=user2,
                 update_data=UserUpdate(email=old_email),
             )
-            raise AssertionError('Should have failed')
-        except UsernameOrEmailAlreadyExists:
-            """all is ok"""
-        except Exception as e:
-            raise AssertionError(e)
 
     @override_settings(auth_config, 'DISABLE_PASSWORD_VALIDATOR', True)
     async def test_update_user_password_success(self, user_service: UserService):
@@ -343,16 +307,11 @@ class TestUserCreateUpdate:
         )
         assert user is not None
 
-        try:
+        with pytest.raises(PasswordValidationError):
             await user_service.update_user(
                 user=user,
                 update_data=UserUpdate(password=new_pass, old_password='test'),
             )
-            raise AssertionError('Should have failed')
-        except PasswordValidationError:
-            """all is ok"""
-        except Exception as e:
-            raise AssertionError(e)
 
     @override_settings(auth_config, 'DISABLE_PASSWORD_VALIDATOR', True)
     async def test_update_user_password_old_missmatch(self, user_service: UserService):
@@ -364,17 +323,14 @@ class TestUserCreateUpdate:
         )
         assert user is not None
 
-        try:
+        with pytest.raises(PasswordValidationError):
             await user_service.update_user(
                 user=user,
                 update_data=UserUpdate(password='new_pass', old_password='wrong_pass'),
             )
-            raise AssertionError('Should have failed')
-        except PasswordValidationError:
-            """all is ok"""
-        except Exception as e:
-            raise AssertionError(e)
 
+
+class TestUserService:
     @pytest.mark.parametrize(
         'username, email, query',
         [
@@ -449,6 +405,14 @@ class TestUserCreateUpdate:
         except Exception as e:
             assert isinstance(e, HTTPException)
             assert e.status_code == 401
+
+        try:
+            await user_service.get_user_or_401(-1111, detail='test_detail')
+            raise AssertionError('Should have failed')
+        except Exception as e:
+            assert isinstance(e, HTTPException)
+            assert e.status_code == 401
+            assert e.detail == 'test_detail'
 
         try:
             await user_service.get_user_or_404(-1111)

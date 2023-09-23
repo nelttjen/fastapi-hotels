@@ -6,8 +6,7 @@ from pymongo import MongoClient
 
 from src.auth.config import oauth2_scheme
 from src.auth.jwt import TokenType
-from src.auth.repositories import (EmailCodeSentRepository,
-                                   VerificationCodeRepository)
+from src.auth.repositories import EmailCodeSentRepository, VerificationCodeRepository
 from src.auth.services import AuthService
 from src.base.exceptions import Unauthorized
 from src.config import mongo_settings

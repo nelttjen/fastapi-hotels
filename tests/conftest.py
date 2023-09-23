@@ -7,15 +7,20 @@ import functools
 from typing import List
 
 import pytest
+from httpx import AsyncClient
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from migrations import __models__  # noqa
-from src.auth.services import RegisterService
+from src.app import app as fastapi_app
+from src.auth.dependencies import get_auth_service
+from src.auth.jwt import create_access_token
+from src.auth.services import AuthService, RegisterService
 from src.config import app_settings
 from src.database import DatabaseModel, context_db_session, engine
 from src.users.dependencies import get_user_service
 from src.users.models import User
+from src.users.services import UserService
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -37,7 +42,7 @@ async def cleanup_database():
 
 
 @pytest.fixture(scope='function')
-async def session():
+async def session() -> AsyncSession:
     async with context_db_session() as conn:
         yield conn
 
@@ -83,10 +88,55 @@ async def users(session: AsyncSession) -> List[User]:
         User(
             username=f'user_{i + 1}',
             email=f'user_{i + 1}@example.com',
-            password=RegisterService.make_password_hash(f'user_{i + 1}'),
+            password=await RegisterService.make_password_hash(f'user_{i + 1}'),
             **param,
         )
         for i, param in enumerate(params)
     ]
     await user_service.repository.bulk_create(users, commit=True)
     return users
+
+
+@pytest.fixture
+async def superuser(session: AsyncSession) -> User:
+    user_service = await get_user_service(session)
+
+    user = User(
+        username='admin',
+        email='admin@example.org',
+        password=await RegisterService.make_password_hash('admin'),
+        is_staff=True,
+        is_active=True,
+        is_superuser=True,
+    )
+    await user_service.repository.create(user, commit=True)
+    return user
+
+
+@pytest.fixture(scope='function')
+async def ac() -> AsyncClient:
+    async with AsyncClient(app=fastapi_app, base_url='http://test') as client:
+        yield client
+
+
+@pytest.fixture(scope='function')
+async def auth_ac(superuser: User) -> AsyncClient:
+    token = create_access_token(superuser)
+    async with AsyncClient(
+        app=fastapi_app,
+        base_url='http://test',
+        headers={
+            'Authorization': f'Bearer {token}',
+        },
+    ) as client:
+        yield client
+
+
+@pytest.fixture
+async def user_service(session) -> UserService:
+    return await get_user_service(session)
+
+
+@pytest.fixture
+async def auth_service(user_service: UserService) -> AuthService:
+    return await get_auth_service(user_service)

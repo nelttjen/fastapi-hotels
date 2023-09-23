@@ -6,17 +6,20 @@ from typing import Any
 from jose import JWTError, jwt
 
 from src.auth.config import auth_config
-from src.auth.exceptions import (BadCredentialsException, BadTokenException,
-                                 EmailRateLimit, InvalidEmailCode,
-                                 UserForEmailCodeNotFound,
-                                 UserNotActiveException)
+from src.auth.exceptions import (
+    BadCredentialsException,
+    BadTokenException,
+    EmailRateLimit,
+    InvalidEmailCode,
+    UserForEmailCodeNotFound,
+    UserNotActiveException,
+)
 from src.auth.jwt import TokenType, create_tokens
 from src.auth.models import CodeTypes, VerificationCode
-from src.auth.repositories import (EmailCodeSentRepository,
-                                   VerificationCodeRepository)
+from src.auth.repositories import EmailCodeSentRepository, VerificationCodeRepository
 from src.auth.schemas import ActivateUserData, RecoveryUserData
-from src.celery_conf.tasks.emails import (send_activation_email,
-                                          send_recovery_email)
+from src.base.utils import get_utcnow
+from src.celery_conf.tasks.emails import send_activation_email, send_recovery_email
 from src.users.exceptions import PasswordValidationError
 from src.users.models import User
 from src.users.schemas import UserCreate
@@ -53,7 +56,7 @@ class AuthService:
             raise JWTError
 
         correct = token_type_payload == token_type.value
-        expired = datetime.datetime.fromisoformat(expires) < datetime.datetime.utcnow()
+        expired = datetime.datetime.fromisoformat(expires) < get_utcnow()
 
         if not correct or expired:
             debugger.debug(f'{correct=} {expired=} {expires=}')
@@ -91,8 +94,8 @@ class AuthService:
         try:
             user = await self.get_user_from_token(refresh_token, TokenType.REFRESH)
             return {'user': user, **create_tokens(user)}
-        except JWTError:
-            raise BadTokenException
+        except JWTError as exc:
+            raise BadTokenException from exc
 
     async def validate_access_token(self, access_token: str):
         try:
@@ -102,14 +105,15 @@ class AuthService:
 
     async def register_user(
         self, new_user: UserCreate,
-    ) -> None:
-        await self.user_service.create_user(
+    ) -> User:
+        user = await self.user_service.create_user(
             username=new_user.username,
             email=new_user.email,
             password=new_user.password,
             bypass_validation=auth_config.DISABLE_PASSWORD_VALIDATOR,
         )
         await self.send_activation_email(new_user.email)
+        return user
 
     async def _find_or_create_code(self, email: str, code_type: CodeTypes) -> VerificationCode:
         user = await self.user_service.get_user_by_email(email=email)

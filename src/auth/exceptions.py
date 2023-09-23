@@ -1,7 +1,6 @@
 from fastapi import WebSocketException, status
 
-from src.base.exceptions import (BadRequest, NotFound, TooManyRequests,
-                                 Unauthorized)
+from src.base.exceptions import BadRequest, NotFound, TooManyRequests, Unauthorized
 
 
 class BadCredentialsException(Unauthorized):

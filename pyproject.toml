@@ -21,7 +21,6 @@ celery = "^5.3.4"
 pillow = "^10.0.0"
 pymongo = "^4.5.0"
 sqladmin = "^0.14.1"
-faker = "^19.6.1"
 importlib-metadata = "^6.8.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -45,8 +44,56 @@ flower = "^2.0.1"
 httpx = "^0.25.0"
 pytest = "^7.4.2"
 pytest-asyncio = "^0.21.1"
+pytest-mock = "^3.11.1"
+faker = "^19.6.1"
 coverage = "^7.3.1"
+mock = "^5.1.0"
+black = "^23.9.1"
+ruff = "^0.0.291"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
+include = '\.pyi?$'
+extend-exclude = '''
+(app/tests|app/migrations)
+'''
+
+[tool.ruff]
+line-length = 120
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+target-version = 'py310'
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "B",    # bugbear
+    "W",    # pycodestyle warnings
+    "C90",  # too complex
+    "I",    # isort
+    "N",    # pep8 naming
+    "A",    # builtins
+    "COM",  # commas
+    "Q",    # quotes
+    "SIM",  # simplify
+]
+exclude = [
+    'venv',
+    'migrations',
+    'tests',
+]
+ignore = [
+    'B008',  # Depends in fuctions
+]
+
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+
+[tool.ruff.mccabe]
+max-complexity = 12

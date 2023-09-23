@@ -3,7 +3,7 @@ test_db = db.getSiblingDB('test');
 
 my_db.createCollection('verification_codes');
 my_db.createCollection('email_code_sent');
-test_db.createCollection('email_code_sent');
+test_db.createCollection('verification_codes');
 test_db.createCollection('email_code_sent');
 
 my_db.createUser({

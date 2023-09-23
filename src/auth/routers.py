@@ -5,8 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from src.auth.config import oauth2_scheme
 from src.auth.dependencies import get_auth_service
-from src.auth.schemas import (ActivateUserData, EmailCodeRequestData,
-                              RecoveryUserData, RefreshToken, UserReadTokens)
+from src.auth.schemas import ActivateUserData, EmailCodeRequestData, RecoveryUserData, RefreshToken, UserReadTokens
 from src.auth.services import AuthService
 from src.base.schemas import DetailModel, SuccessModel
 from src.users.schemas import UserCreate

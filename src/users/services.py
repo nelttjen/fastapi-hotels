@@ -8,9 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from src.auth.config import auth_config, pwd_context
 from src.base.exceptions import HTTP_EXC, NotFound, Unauthorized
 from src.base.repositories import Transaction
-from src.users.exceptions import (PasswordValidationError,
-                                  UsernameOrEmailAlreadyExists,
-                                  UsernameValidationError)
+from src.users.exceptions import PasswordValidationError, UsernameOrEmailAlreadyExists, UsernameValidationError
 from src.users.models import User
 from src.users.repositories import UserRepository
 from src.users.schemas import UserUpdate
@@ -123,15 +121,19 @@ class RegisterService:
 
         regex_password = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[\d#@$=_+*&^%]).+$')
         if not regex_password.match(password):
-            raise PasswordValidationError('Password must contain at least one uppercase letter, lower case letter, '
-                                          'and at least one number or special character (#@$=_+*&^%)')
+            raise PasswordValidationError(
+                'Password must contain at least one uppercase letter, lower case letter, '
+                'and at least one number or special character (#@$=_+*&^%)',
+            )
 
     @staticmethod
     async def username_validator(username: str) -> None:
         regex_username = re.compile(r'^[a-zA-Z0-9_-]{4,32}$')
         if not regex_username.match(username):
-            raise UsernameValidationError('Username must be between 4 and 32 characters long, '
-                                          'and can contain only letters, numbers and dashes')
+            raise UsernameValidationError(
+                'Username must be between 4 and 32 characters long, '
+                'and can contain only letters, numbers and dashes',
+            )
 
     @staticmethod
     async def make_password_hash(password: str) -> str:
