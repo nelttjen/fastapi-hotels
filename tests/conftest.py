@@ -1,5 +1,8 @@
 import os
 
+from pymongo import MongoClient
+from pymongo.database import Database
+
 os.environ['MODE'] = 'TEST'
 
 import asyncio
@@ -16,7 +19,8 @@ from src.app import app as fastapi_app
 from src.auth.dependencies import get_auth_service
 from src.auth.jwt import create_access_token
 from src.auth.services import AuthService, RegisterService
-from src.config import app_settings
+from src.auth.models import EmailCodeSent, VerificationCode
+from src.config import app_settings, mongo_settings
 from src.database import DatabaseModel, context_db_session, engine
 from src.users.dependencies import get_user_service
 from src.users.models import User
@@ -33,18 +37,31 @@ async def prepare_database():
 
 
 @pytest.fixture(scope='function', autouse=True)
-async def cleanup_database():
+async def cleanup_database(mongo_session: Database):
     assert app_settings.MODE == 'TEST'
 
     async with context_db_session() as conn:
         await conn.execute(delete(User))
         await conn.commit()
 
+    code_collection = mongo_session.get_collection(EmailCodeSent.Meta.__collection__)
+    verification_collection = mongo_session.get_collection(VerificationCode.Meta.__collection__)
+    code_collection.delete_many({})
+    verification_collection.delete_many({})
+
 
 @pytest.fixture(scope='function')
 async def session() -> AsyncSession:
     async with context_db_session() as conn:
         yield conn
+
+
+@pytest.fixture(scope='function')
+async def mongo_session():
+    client = MongoClient(**mongo_settings.MONGODB_AUTHPARAMS)
+    db = client.get_database(mongo_settings.MONGODB_DB)
+    yield db
+    client.close()
 
 
 @pytest.fixture(scope='session')
@@ -72,71 +89,6 @@ def override_settings(target, attr, value):
 
     return decorator
 
-
-@pytest.fixture
-async def users(session: AsyncSession) -> List[User]:
-
-    user_service = await get_user_service(session)
-
-    params = [
-        {'is_staff': True, 'is_active': True, 'is_superuser': True},
-        {'is_staff': True, 'is_active': True, 'is_superuser': False},
-        {'is_staff': False, 'is_active': True, 'is_superuser': False},
-        {'is_staff': False, 'is_active': False, 'is_superuser': False},
-    ]
-    users = [
-        User(
-            username=f'user_{i + 1}',
-            email=f'user_{i + 1}@example.com',
-            password=await RegisterService.make_password_hash(f'user_{i + 1}'),
-            **param,
-        )
-        for i, param in enumerate(params)
-    ]
-    await user_service.repository.bulk_create(users, commit=True)
-    return users
-
-
-@pytest.fixture
-async def superuser(session: AsyncSession) -> User:
-    user_service = await get_user_service(session)
-
-    user = User(
-        username='admin',
-        email='admin@example.org',
-        password=await RegisterService.make_password_hash('admin'),
-        is_staff=True,
-        is_active=True,
-        is_superuser=True,
-    )
-    await user_service.repository.create(user, commit=True)
-    return user
-
-
-@pytest.fixture(scope='function')
-async def ac() -> AsyncClient:
-    async with AsyncClient(app=fastapi_app, base_url='http://test') as client:
-        yield client
-
-
-@pytest.fixture(scope='function')
-async def auth_ac(superuser: User) -> AsyncClient:
-    token = create_access_token(superuser)
-    async with AsyncClient(
-        app=fastapi_app,
-        base_url='http://test',
-        headers={
-            'Authorization': f'Bearer {token}',
-        },
-    ) as client:
-        yield client
-
-
-@pytest.fixture
-async def user_service(session) -> UserService:
-    return await get_user_service(session)
-
-
-@pytest.fixture
-async def auth_service(user_service: UserService) -> AuthService:
-    return await get_auth_service(user_service)
+from tests.fixtures.users       import *    # noqa
+from tests.fixtures.auth        import *    # noqa
+from tests.fixtures.client      import *    # noqa

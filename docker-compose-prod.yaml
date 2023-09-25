@@ -3,7 +3,7 @@ version: "3.8"
 services:
   redis:
     image: redis:7.2.1-alpine3.18
-    container_name: fastapi-redis-hotels
+    container_name: fastapi-redis-hotels-prod
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -14,7 +14,7 @@ services:
 
   mongodb:
     image: mongo:7.0.0-rc6-jammy
-    container_name: fastapi-mongodb-hotels
+    container_name: fastapi-mongodb-hotels-prod
     restart: unless-stopped
     ports:
       - "27017:27017"
@@ -22,13 +22,13 @@ services:
       - 27017
     volumes:
       - mongodb_data:/data/db
-      - ./docker/dev/mongo/init_mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./docker/prod/mongo/init_mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     env_file:
-      - .env
+      - .env-prod
 
   postgresdb:
     image: postgres:15.4-alpine3.18
-    container_name: fastapi-postgres-hotels
+    container_name: fastapi-postgres-hotels-prod
     restart: unless-stopped
     ports:
       - "5432:5432"
@@ -37,13 +37,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
-      - .env
+      - .env-prod
     networks:
       - database
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: fastapi-pgadmin-hotels
+    container_name: fastapi-pgadmin-hotels-prod
     restart: unless-stopped
     ports:
       - "5050:80"
@@ -59,8 +59,8 @@ services:
   celery:
     build:
       context: .
-      dockerfile: docker/dev/app/Dockerfile
-    container_name: fastapi-celery-hotels
+      dockerfile: docker/prod/app/Dockerfile
+    container_name: fastapi-celery-hotels-prod
     restart: unless-stopped
     command:
       - poetry
@@ -78,15 +78,14 @@ services:
       - database
       - redis
       - mongodb
-    #    volumes:
-    #      - .:/app/
     depends_on:
       - redis
       - postgresdb
       - mongodb
+
   flower:
     image: mher/flower
-    container_name: fastapi-flower-hotels
+    container_name: fastapi-flower-hotels-prod
     restart: unless-stopped
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/1
@@ -101,21 +100,41 @@ services:
     ports:
       - "8080:443"
 
+  application:
+    container_name: fastapi-application-hotels-prod
+    build:
+      context: .
+      dockerfile: docker/prod/app/Dockerfile
+    networks:
+      - database
+      - redis
+      - mongodb
+    depends_on:
+      - mongodb
+      - redis
+      - postgresdb
+    environment:
+      - MODE=PROD
+    ports:
+      - "80:8000"
+    entrypoint: "entrypoint.sh"
+
+
 volumes:
   postgres_data:
-    name: "postgres-fastapi-hotels"
+    name: "postgres-fastapi-hotels-prod"
   pgadmin_data:
-    name: "pgadmin-fastapi-hotels"
+    name: "pgadmin-fastapi-hotels-prod"
   mongodb_data:
-    name: "mongodb-fastapi-hotels"
+    name: "mongodb-fastapi-hotels-prod"
 
 networks:
   database:
     driver: bridge
-    name: "database_network-hotels"
+    name: "database_network-hotels-prod"
   redis:
     driver: bridge
-    name: "redis_network-hotels"
+    name: "redis_network-hotels-prod"
   mongodb:
     driver: bridge
-    name: "mongodb_network-hotels"
+    name: "mongodb_network-hotels-prod"

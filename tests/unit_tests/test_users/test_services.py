@@ -88,13 +88,12 @@ class TestUserCreateUpdate:
     async def test_create_user_password_bypass(
             self, user_service: UserService, username: str, email: str, password: str,
     ):
-        with pytest.raises(PasswordValidationError):
-            await user_service.create_user(
-                username=Faker().name(),
-                email=Faker().email(),
-                password=password,
-                bypass_validation=True,
-            )
+        await user_service.create_user(
+            username=Faker().name(),
+            email=Faker().email(),
+            password=password,
+            bypass_validation=True,
+        )
 
     @pytest.mark.parametrize(
         'username',

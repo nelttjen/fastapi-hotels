@@ -31,7 +31,7 @@ class VerificationCodeRepository(AbstractMongoRepository[VerificationCode]):
             code=code_hash,
             code_type=code_type,
             expires=int(
-                (datetime.datetime.utcnow() + datetime.timedelta(
+                (get_utcnow() + datetime.timedelta(
                     seconds=auth_config.EMAIL_CODE_EXPIRE_MINUTES,
                 )).timestamp(),
             ),
