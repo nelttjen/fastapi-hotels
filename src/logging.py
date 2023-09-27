@@ -11,9 +11,7 @@ class RequireDebugTrue(logging.Filter):
 def init_loggers():
     try:
         logging.config.dictConfig(config('LOGGING', dict))  # noqa
-    except ValueError as e:
-        logging.error(e)
-
-    if app_settings.DEBUG:
         debugger = logging.getLogger('debugger')
         debugger.debug('Loggers initialized')
+    except ValueError as e:
+        logging.error(e)

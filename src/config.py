@@ -93,6 +93,13 @@ class MongoSettings(BaseSettings):
             'authSource': self.MONGODB_DB,
         }
 
+    @property
+    def MONGODB_AUTHSTRING(self) -> str:  # noqa
+        return (f'mongodb://'
+                f'{self.MONGODB_USER}:{self.MONGODB_PASSWORD}@'
+                f'{self.MONGODB_HOST}:{self.MONGODB_PORT}/'
+                f'{self.MONGODB_DB}')
+
     model_config = _base_env_config.copy()
 
 

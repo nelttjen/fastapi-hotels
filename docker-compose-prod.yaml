@@ -25,6 +25,8 @@ services:
       - ./docker/prod/mongo/init_mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     env_file:
       - .env-prod
+    networks:
+      - mongodb
 
   postgresdb:
     image: postgres:15.4-alpine3.18
@@ -118,7 +120,6 @@ services:
     ports:
       - "80:8000"
     entrypoint: "entrypoint.sh"
-
 
 volumes:
   postgres_data:

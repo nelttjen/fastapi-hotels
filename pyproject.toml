@@ -97,3 +97,4 @@ inline-quotes = "single"
 
 [tool.ruff.mccabe]
 max-complexity = 12
+

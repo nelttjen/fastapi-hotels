@@ -7,7 +7,7 @@ os.environ['MODE'] = 'TEST'
 
 import asyncio
 import functools
-from typing import List
+from typing import List, Optional
 
 import pytest
 from httpx import AsyncClient
@@ -27,9 +27,22 @@ from src.users.models import User
 from src.users.services import UserService
 
 
+async def perform_clean_db(db_session: Optional[AsyncSession] = None, mongo_session: Optional[Database] = None):
+    if db_session is not None:
+        await db_session.execute(delete(User))
+        await db_session.commit()
+
+    if mongo_session is not None:
+        code_collection = mongo_session.get_collection(EmailCodeSent.Meta.__collection__)
+        verification_collection = mongo_session.get_collection(VerificationCode.Meta.__collection__)
+        code_collection.delete_many({})
+        verification_collection.delete_many({})
+
+
 @pytest.fixture(scope='session', autouse=True)
 async def prepare_database():
     assert app_settings.MODE == 'TEST'
+    os.environ['SINGLE_CLEAN'] = '0'
 
     async with engine.begin() as conn:
         await conn.run_sync(DatabaseModel.metadata.drop_all)
@@ -37,17 +50,21 @@ async def prepare_database():
 
 
 @pytest.fixture(scope='function', autouse=True)
-async def cleanup_database(mongo_session: Database):
+async def cleanup_database(session: AsyncSession, mongo_session: Database, request):
     assert app_settings.MODE == 'TEST'
 
-    async with context_db_session() as conn:
-        await conn.execute(delete(User))
-        await conn.commit()
+    print(os.environ.get('LAST_FUNCTION'))
 
-    code_collection = mongo_session.get_collection(EmailCodeSent.Meta.__collection__)
-    verification_collection = mongo_session.get_collection(VerificationCode.Meta.__collection__)
-    code_collection.delete_many({})
-    verification_collection.delete_many({})
+    if 'disable_clean' in request.keywords:
+        os.environ['LAST_FUNCTION'] = list(request.keywords)[0].split('[')[0]
+        if not int(os.environ.get('SINGLE_CLEAN', '1')):
+            await perform_clean_db(db_session=session, mongo_session=mongo_session)
+            os.environ['SINGLE_CLEAN'] = '1'
+        return
+
+    os.environ['SINGLE_CLEAN'] = '0'
+
+    await perform_clean_db(db_session=session, mongo_session=mongo_session)
 
 
 @pytest.fixture(scope='function')
