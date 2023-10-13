@@ -1,3 +1,4 @@
+import logging
 import os
 
 from pymongo import MongoClient
@@ -27,6 +28,9 @@ from src.users.models import User
 from src.users.services import UserService
 
 
+debugger = logging.getLogger('debugger')
+
+
 async def perform_clean_db(db_session: Optional[AsyncSession] = None, mongo_session: Optional[Database] = None):
     if db_session is not None:
         await db_session.execute(delete(User))
@@ -53,13 +57,13 @@ async def prepare_database():
 async def cleanup_database(session: AsyncSession, mongo_session: Database, request):
     assert app_settings.MODE == 'TEST'
 
-    print(os.environ.get('LAST_FUNCTION'))
+    function_name = list(request.keywords)[0].split('[')[0]
 
     if 'disable_clean' in request.keywords:
-        os.environ['LAST_FUNCTION'] = list(request.keywords)[0].split('[')[0]
-        if not int(os.environ.get('SINGLE_CLEAN', '1')):
+        if not int(os.environ.get('SINGLE_CLEAN', '1')) or function_name != os.environ.get('LAST_FUNCTION'):
             await perform_clean_db(db_session=session, mongo_session=mongo_session)
             os.environ['SINGLE_CLEAN'] = '1'
+        os.environ['LAST_FUNCTION'] = function_name
         return
 
     os.environ['SINGLE_CLEAN'] = '0'

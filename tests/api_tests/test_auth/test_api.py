@@ -6,7 +6,7 @@ from tests.conftest import override_settings
 from src.auth.config import auth_config
 
 
-class TestRegister:
+class TestAuth:
 
     @pytest.mark.disable_clean
     @pytest.mark.parametrize(
