@@ -16,3 +16,8 @@ async def get_frontend_hotels(request: Request):
 @front_hotels_router.get('/{hotel_id}/rooms')
 async def get_frontend_rooms(request: Request, hotel_id: int):
     return templates.TemplateResponse('hotels/rooms.html', {'request': request, 'hotel_id': hotel_id})
+
+
+@front_hotels_router.get('/favourites')
+async def get_frontend_favourites(request: Request):
+    return templates.TemplateResponse('hotels/favourites.html', {'request': request})

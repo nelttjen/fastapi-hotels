@@ -5,18 +5,21 @@ from typing import Any
 
 from jose import JWTError, jwt
 
-from src.auth.config import (ACCESS_TOKEN_SECRET, EMAIL_CODE_SEND_RATE_LIMIT,
-                             REFRESH_TOKEN_SECRET)
-from src.auth.exceptions import (BadCredentialsException, BadTokenException,
-                                 EmailRateLimit, InvalidEmailCode,
-                                 UserForEmailCodeNotFound,
-                                 UserNotActiveException)
+from src.auth.config import auth_config
+from src.auth.exceptions import (
+    BadCredentialsException,
+    BadTokenException,
+    EmailRateLimit,
+    InvalidEmailCode,
+    UserForEmailCodeNotFound,
+    UserNotActiveException,
+)
 from src.auth.jwt import TokenType, create_tokens
 from src.auth.models import CodeTypes, VerificationCode
-from src.auth.repositories import (EmailCodeSentRepository,
-                                   VerificationCodeRepository)
+from src.auth.repositories import EmailCodeSentRepository, VerificationCodeRepository
 from src.auth.schemas import ActivateUserData, RecoveryUserData
-from src.celery.tasks.emails import send_activation_email, send_recovery_email
+from src.base.utils import get_utcnow
+from src.celery_conf.tasks.emails import send_activation_email, send_recovery_email
 from src.users.exceptions import PasswordValidationError
 from src.users.models import User
 from src.users.schemas import UserCreate
@@ -35,7 +38,7 @@ class AuthService:
     def _parse_token(  # noqa: FNE008
             token: str, token_type: TokenType,
     ) -> dict:
-        secret = ACCESS_TOKEN_SECRET if token_type == TokenType.ACCESS else REFRESH_TOKEN_SECRET
+        secret = auth_config.ACCESS_TOKEN_SECRET if token_type == TokenType.ACCESS else auth_config.REFRESH_TOKEN_SECRET
 
         payload = jwt.decode(
             token=token,
@@ -53,7 +56,7 @@ class AuthService:
             raise JWTError
 
         correct = token_type_payload == token_type.value
-        expired = datetime.datetime.fromisoformat(expires) < datetime.datetime.utcnow()
+        expired = datetime.datetime.fromisoformat(expires) < get_utcnow()
 
         if not correct or expired:
             debugger.debug(f'{correct=} {expired=} {expires=}')
@@ -91,8 +94,8 @@ class AuthService:
         try:
             user = await self.get_user_from_token(refresh_token, TokenType.REFRESH)
             return {'user': user, **create_tokens(user)}
-        except JWTError:
-            raise BadTokenException
+        except JWTError as exc:
+            raise BadTokenException from exc
 
     async def validate_access_token(self, access_token: str):
         try:
@@ -102,12 +105,15 @@ class AuthService:
 
     async def register_user(
         self, new_user: UserCreate,
-    ) -> None:
-        await self.user_service.create_user(
+    ) -> User:
+        user = await self.user_service.create_user(
             username=new_user.username,
             email=new_user.email,
             password=new_user.password,
+            bypass_validation=auth_config.DISABLE_PASSWORD_VALIDATOR,
         )
+        await self.send_activation_email(new_user.email)
+        return user
 
     async def _find_or_create_code(self, email: str, code_type: CodeTypes) -> VerificationCode:
         user = await self.user_service.get_user_by_email(email=email)
@@ -116,7 +122,7 @@ class AuthService:
 
         email_code_instance = await self.email_code_repository.get_email_rate_limit_model(email, code_type)
 
-        if not email_code_instance.can_send_new_code(EMAIL_CODE_SEND_RATE_LIMIT):
+        if not email_code_instance.can_send_new_code(auth_config.EMAIL_CODE_SEND_RATE_LIMIT):
             raise EmailRateLimit
 
         await self.email_code_repository.update_last_sent(email_code_instance)
@@ -144,7 +150,8 @@ class AuthService:
 
         if await RegisterService.check_password_hash(recovery_data.new_password, user.password):
             raise PasswordValidationError('You cannot use your current password as the new password')
-        await RegisterService.password_validator(user.username, user.email, recovery_data.new_password)
+        if not auth_config.DISABLE_PASSWORD_VALIDATOR:
+            await RegisterService.password_validator(user.username, user.email, recovery_data.new_password)
 
         user.password = await RegisterService.make_password_hash(recovery_data.new_password)
         await self.user_service.repository.update(user, commit=True)

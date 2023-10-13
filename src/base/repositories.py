@@ -1,7 +1,7 @@
 from abc import ABC
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Generic, Iterable, Optional, Tuple, Type, TypeVar
+from typing import Generic, Iterable, Literal, Optional, Tuple, Type, TypeVar
 
 from bson import ObjectId
 from pymongo.collection import Collection
@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.base.exceptions import HTTP_EXC, InternalServerError
 from src.base.models import MongoModel
-from src.database import DatabaseModel
+from src.database import DEFAULT_ISOLATION_LEVEL, DatabaseModel
 
 T = TypeVar('T', bound=DatabaseModel)
 MT = TypeVar('MT', bound=MongoModel)
@@ -76,6 +76,7 @@ class BaseRepository(ABC, Generic[T]):
 @dataclass
 class Transaction:
     session: AsyncSession
+    isolation_level: Literal['READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE'] = DEFAULT_ISOLATION_LEVEL
 
     async def __aenter__(self):
         if self.session is None:
@@ -84,6 +85,8 @@ class Transaction:
             await self.session.begin()
         except InvalidRequestError:
             """Transaction already has begun."""
+        if self.isolation_level != DEFAULT_ISOLATION_LEVEL:
+            await self.session.connection(execution_options={'isolation_level': self.isolation_level})
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

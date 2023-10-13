@@ -3,13 +3,14 @@ import logging
 from collections.abc import Sequence
 from typing import List, Optional, Type
 
-from sqlalchemy import RowMapping, and_, func, or_, select
+from sqlalchemy import RowMapping, and_, delete, func, or_, select
+from sqlalchemy.exc import IntegrityError
 
 from src.base.exceptions import HTTP_EXC, NotFound
 from src.base.repositories import BaseRepository
 from src.bookings.models import Booking
 from src.bookings.repositories import BookingRepository
-from src.hotels.models import Hotel, Room
+from src.hotels.models import FavouriteHotel, Hotel, Room
 
 debugger = logging.getLogger('debugger')
 
@@ -146,6 +147,42 @@ class HotelRepository(BaseRepository[Hotel | Room]):
             return result.mappings().first()
 
         return result.mappings().all()
+
+    async def get_my_favourite_hotels(self, user_id: int) -> Sequence[RowMapping]:
+        stmt = select(
+            Hotel.__table__.columns,  # noqa
+            (func.coalesce(func.sum(Room.quantity), 0)).label('rooms_count'),
+        ).join(
+            Room, Room.hotel_id == Hotel.id, isouter=True,
+        ).join(
+            FavouriteHotel, and_(
+                FavouriteHotel.hotel_id == Hotel.id,
+                FavouriteHotel.user_id == user_id,
+            ),
+        ).group_by(Hotel.id).order_by(Hotel.name.asc())
+
+        res = await self.session.execute(stmt)
+        return res.mappings().all()
+
+    async def add_favourite_hotel(self, user_id: int, hotel_id: int) -> bool:
+        new_fav = FavouriteHotel(
+            user_id=user_id,  # noqa
+            hotel_id=hotel_id,  # noqa
+        )
+        try:
+            self.session.add(new_fav)
+            await self.session.commit()
+            return True
+        except IntegrityError:
+            return False
+
+    async def remove_favourite_hotel(self, user_id: int, hotel_id: int):
+        stmt = delete(FavouriteHotel).where(and_(
+            FavouriteHotel.user_id == user_id,
+            FavouriteHotel.hotel_id == hotel_id,
+        ))
+        await self.session.execute(stmt)
+        await self.session.commit()
 
     @staticmethod
     async def get_hotel_join(name: Optional[str] = None, hotel_ids: Optional[List[int]] = None):

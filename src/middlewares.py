@@ -34,8 +34,7 @@ class AdminAuthJWTMiddleware(AuthenticationBackend):
 
     @classmethod
     async def __check_user_access(cls, user) -> bool:
-        # TODO: check if user is admin
-        return user.is_active
+        return user.is_staff or user.is_superuser
 
     async def authenticate(self, request: Request) -> Optional[RedirectResponse]:
         token = request.session.get('access_token')
@@ -49,14 +48,14 @@ class AdminAuthJWTMiddleware(AuthenticationBackend):
             auth_service = await get_auth_service(user_service)
             try:
                 user = await get_current_user(auth_service, token)
-                if not self.__check_user_access(user):
+                if not await self.__check_user_access(user):
                     raise Exception
             except Exception:
                 if refresh_token:
                     try:
                         data = await auth_service.refresh_tokens(refresh_token)
                         user = data['user']
-                        if not self.__check_user_access(user):
+                        if not await self.__check_user_access(user):
                             raise Exception
                         request.session['access_token'] = data['access_token']
                         request.session['refresh_token'] = data['refresh_token']

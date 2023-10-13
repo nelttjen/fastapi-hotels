@@ -4,6 +4,7 @@ from enum import Enum
 from pydantic import EmailStr
 
 from src.base.models import MongoModel
+from src.base.utils import get_utcnow
 
 
 class CodeTypes(str, Enum):
@@ -21,7 +22,7 @@ class VerificationCode(MongoModel):
         __collection__ = 'verification_codes'
 
     def is_expired(self) -> bool:
-        return int(datetime.datetime.utcnow().timestamp()) > self.expires
+        return int(get_utcnow().timestamp()) > self.expires
 
 
 class EmailCodeSent(MongoModel):
@@ -34,4 +35,4 @@ class EmailCodeSent(MongoModel):
 
     def can_send_new_code(self, rate_limit: int) -> bool:
         last_sent = datetime.datetime.fromtimestamp(self.last_sent)
-        return last_sent + datetime.timedelta(seconds=rate_limit) < datetime.datetime.utcnow()
+        return last_sent + datetime.timedelta(seconds=rate_limit) < get_utcnow()

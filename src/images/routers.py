@@ -4,7 +4,7 @@ import shutil
 from fastapi import APIRouter, UploadFile
 from starlette import status
 
-from src.celery.tasks.images import process_picture
+from src.celery_conf.tasks.images import process_picture
 from src.config import BASE_DIR
 from src.images.exceptions import FileExistsOnServerError
 

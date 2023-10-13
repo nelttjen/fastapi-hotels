@@ -1,9 +1,10 @@
 import datetime
 import hashlib
 
-from src.auth.config import EMAIL_CODE_EXPIRE_MINUTES
+from src.auth.config import auth_config
 from src.auth.models import CodeTypes, EmailCodeSent, VerificationCode
 from src.base.repositories import AbstractMongoRepository
+from src.base.utils import get_utcnow
 
 
 class VerificationCodeRepository(AbstractMongoRepository[VerificationCode]):
@@ -24,13 +25,15 @@ class VerificationCodeRepository(AbstractMongoRepository[VerificationCode]):
         return code
 
     async def generate_verification_code(self, user_id, code_type: CodeTypes) -> VerificationCode:
-        code_hash = hashlib.sha256(str(user_id + datetime.datetime.utcnow().timestamp()).encode()).hexdigest()
+        code_hash = hashlib.sha256(str(user_id + get_utcnow().timestamp()).encode()).hexdigest()
         verification_code = VerificationCode(
             user_id=user_id,
             code=code_hash,
             code_type=code_type,
             expires=int(
-                (datetime.datetime.utcnow() + datetime.timedelta(seconds=EMAIL_CODE_EXPIRE_MINUTES)).timestamp(),
+                (get_utcnow() + datetime.timedelta(
+                    seconds=auth_config.EMAIL_CODE_EXPIRE_MINUTES,
+                )).timestamp(),
             ),
         )
         self.save(verification_code)
@@ -70,5 +73,5 @@ class EmailCodeSentRepository(AbstractMongoRepository[EmailCodeSent]):
         return instance
 
     async def update_last_sent(self, instance: EmailCodeSent) -> None:
-        instance.last_sent = int(datetime.datetime.utcnow().timestamp())
+        instance.last_sent = int(get_utcnow().timestamp())
         self.save(instance)

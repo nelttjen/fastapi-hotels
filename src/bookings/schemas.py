@@ -3,6 +3,7 @@ import datetime
 from pydantic import field_validator
 
 from src.base.schemas import BaseORMModel
+from src.base.utils import get_utcnow
 from src.hotels.schemas import DateRangeModel, HotelRoomInfoWithHotel
 
 
@@ -11,7 +12,7 @@ class BookingCreateData(DateRangeModel):
 
     @field_validator('date_from')
     def validate_date_from(cls, value):  # noqa
-        if value <= datetime.datetime.utcnow().date():
+        if value <= get_utcnow().date():
             raise ValueError('Date must be tomorrow or later')
         return value
 

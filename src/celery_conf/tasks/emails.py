@@ -3,7 +3,7 @@ import smtplib
 from email.message import EmailMessage
 
 from src.auth.models import CodeTypes
-from src.celery.celery import celery_app
+from src.celery_conf.celery import celery_app
 from src.config import CONNECTION_PROTOCOL, DOMAIN, google_smtp_settings
 from src.utils import assert_never
 

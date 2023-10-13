@@ -1,0 +1,31 @@
+{% extends 'app_base.html' %}
+{% block head %}
+    <title>Favourites</title>
+    <script src="/static/js/hotels/favourites.js"></script>
+    <style>
+    .sort-asc::after {
+            content: " ▲";
+        }
+
+    .sort-desc::after {
+        content: " ▼";
+    }
+    </style>
+{% endblock %}
+{% block content %}
+<div class="container mt-4">
+        <h1>My favourite hotels</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="cursor: pointer; user-select: none;" data-column="hotel">Hotel</th>
+                    <th style="cursor: pointer; user-select: none;" data-column="location">Location</th>
+                    <th style="cursor: pointer; user-select: none;" data-column="rooms">Rooms count</th>
+                </tr>
+            </thead>
+            <tbody class="my-favourites-list">
+
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

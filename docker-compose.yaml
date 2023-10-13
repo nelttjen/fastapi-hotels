@@ -22,7 +22,7 @@ services:
       - 27017
     volumes:
       - mongodb_data:/data/db
-      - ./docker/mongo/init_mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./docker/dev/mongo/init_mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     env_file:
       - .env
 
@@ -59,7 +59,7 @@ services:
   celery:
     build:
       context: .
-      dockerfile: docker/app/Dockerfile
+      dockerfile: docker/dev/app/Dockerfile
     container_name: fastapi-celery-hotels
     restart: unless-stopped
     command:
@@ -67,7 +67,7 @@ services:
       - run
       - celery
       - -A
-      - src.celery.celery:celery_app
+      - src.celery_conf.celery:celery_app
       - worker
       - --loglevel=INFO
     env_file:
@@ -99,7 +99,7 @@ services:
     depends_on:
       - celery
     ports:
-      - "8001:443"
+      - "8080:443"
 
 volumes:
   postgres_data:

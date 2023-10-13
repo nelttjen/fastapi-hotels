@@ -56,7 +56,7 @@ $(document).ready(async function() {
     await new Promise(resolve => {
         setTimeout(() => {
             resolve()
-        }, 100);
+        }, 200);
     })
     // alert(`logged in as ${authHeaders['Authorization']}`);
     await fetchBookingData();
